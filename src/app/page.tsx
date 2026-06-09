@@ -6,7 +6,7 @@ export default function LoginPage() {
     const supabase = getSupabase()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}/auth/callback` },
+      options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? location.origin}/auth/callback` },
     })
   }
 

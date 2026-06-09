@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&family=Inter:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-base: #F7F5F1;
+  --surface: #FFFFFF;
+  --surface-secondary: #F0EDE8;
+  --text-primary: #1C1917;
+  --text-secondary: #78716C;
+  --text-muted: #A8A29E;
+  --border: #E7E2D9;
+
+  /* theme vars — overridden at runtime by ThemeProvider */
+  --accent: #78716C;
+  --accent-light: #A8A29E;
+  --bar: #A8A29E;
+  --pill-bg: #F0EDE8;
+  --pill-text: #57534E;
+  --card-tint: rgba(120, 113, 108, 0.06);
+  --focus-ring: rgba(120, 113, 108, 0.15);
+  --app-gradient: linear-gradient(135deg, #F7F5F1 0%, #EDE9E3 100%);
+
+  /* spacing */
+  --xs: 4px;
+  --sm: 8px;
+  --md: 16px;
+  --lg: 24px;
+  --xl: 32px;
+  --2xl: 48px;
+
+  /* radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 9999px;
+
+  /* shadows */
+  --sh-card: 0px 2px 12px rgba(28, 25, 23, 0.07);
+  --sh-card-hover: 0px 4px 20px rgba(28, 25, 23, 0.12);
+  --sh-button: 0px 2px 8px rgba(28, 25, 23, 0.10);
+  --sh-nav: 0px -2px 16px rgba(28, 25, 23, 0.06);
+
+  --font-display: 'Plus Jakarta Sans', 'Noto Sans Thai', sans-serif;
+  --font-body: 'Inter', 'Noto Sans Thai', sans-serif;
+  --font-thai: 'Noto Sans Thai', 'Plus Jakarta Sans', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Typography helpers */
+.font-display { font-family: var(--font-display); }
+.font-thai    { font-family: var(--font-thai); }
+
+/* Hide scrollbars but keep scroll */
+.scroll-hidden {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-hidden::-webkit-scrollbar { display: none; }
+
+/* Card */
+.tj-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--md);
+  box-shadow: var(--sh-card);
+}
+
+/* Primary button */
+.tj-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  appearance: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--r-md);
+  padding: 14px 24px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: var(--sh-button);
+  transition: transform 120ms ease-out, filter 150ms ease-out;
+}
+.tj-btn-primary:hover  { filter: brightness(0.92); }
+.tj-btn-primary:active { transform: scale(0.97); }
+.tj-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+/* Ghost button */
+.tj-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 20px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 15px;
+  transition: transform 120ms ease-out, background 150ms;
+}
+.tj-btn-ghost:hover  { background: rgba(0, 0, 0, 0.03); }
+.tj-btn-ghost:active { transform: scale(0.97); }
+
+/* Input */
+.tj-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text-primary);
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.tj-input::placeholder { color: var(--text-muted); }
+.tj-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Animations */
+@keyframes cardIn   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInR { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+@keyframes slideInL { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+@keyframes sheetUp  { from { transform: translateY(100%); } to { transform: none; } }
+
+.anim-card  { animation: cardIn   240ms ease-out both; }
+.anim-fade  { animation: fadeIn   200ms ease-out both; }
+.anim-in-r  { animation: slideInR 280ms ease-out both; }
+.anim-in-l  { animation: slideInL 280ms ease-out both; }
+.anim-sheet { animation: sheetUp  300ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

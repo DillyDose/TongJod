@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   if (!code) return NextResponse.redirect(`${origin}/`)
 
   const cookieStore = await cookies()
+  const redirectTo = NextResponse.redirect(`${origin}/dashboard`)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
         getAll: () => cookieStore.getAll(),
         setAll: (toSet) =>
           toSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
+            redirectTo.cookies.set(name, value, options),
           ),
       },
     },
@@ -57,5 +58,5 @@ export async function GET(request: NextRequest) {
     await supabase.from('categories').insert(rows)
   }
 
-  return NextResponse.redirect(`${origin}/dashboard`)
+  return redirectTo
 }

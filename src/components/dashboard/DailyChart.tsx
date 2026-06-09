@@ -50,7 +50,7 @@ export function DailyChart({ transactions, daysInMonth, lang }: Props) {
           />
           <Tooltip
             contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
-            formatter={(v: number) => [`฿${v.toLocaleString()}`, '']}
+            formatter={(v) => [`฿${Number(v).toLocaleString()}`, '']}
             labelFormatter={(l) => `Day ${l}`}
           />
           <Bar dataKey="amount" fill={theme.bar} radius={[4, 4, 0, 0]} />

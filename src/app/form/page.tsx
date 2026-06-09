@@ -45,12 +45,11 @@ export default function FormPage() {
   )
 
   useEffect(() => {
-    getSupabase()
-      .auth.getUser()
-      .then(({ data }) => {
-        if (!data.user) { router.push('/'); return }
-        setUserId(data.user.id)
-      })
+    void (async () => {
+      const { data: { user } } = await getSupabase().auth.getUser()
+      if (!user) { router.push('/'); return }
+      setUserId(user.id)
+    })()
   }, [router])
 
   function advance() { setAnimDir('forward'); setStep((s) => s + 1) }

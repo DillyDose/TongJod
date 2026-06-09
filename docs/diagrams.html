@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TongJod — Design Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 40%, #6EE7B7 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      color: #1C1917;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .page-header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #065F46;
+      letter-spacing: -0.5px;
+    }
+
+    .page-header p {
+      margin-top: 8px;
+      color: #6B7280;
+      font-size: 15px;
+    }
+
+    .diagrams-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .diagram-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(28, 25, 23, 0.08);
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .diagram-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1C1917;
+      margin-bottom: 6px;
+    }
+
+    .diagram-card .subtitle {
+      font-size: 13px;
+      color: #78716C;
+      margin-bottom: 28px;
+    }
+
+    .diagram-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tag-arch   { background: #C2E5FF; color: #0369A1; }
+    .tag-db     { background: #DCCCFF; color: #6D28D9; }
+    .tag-flow   { background: #FEF9C3; color: #92400E; }
+    .tag-logic  { background: #FFE4E6; color: #9F1239; }
+
+    .mermaid {
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mermaid svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+      body { padding: 20px 12px; }
+      .diagram-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>TongJod</h1>
+    <p>Income &amp; Expense App — Design Diagrams</p>
+  </div>
+
+  <div class="diagrams-grid">
+
+    <!-- 1. System Architecture -->
+    <div class="diagram-card">
+      <span class="diagram-tag tag-arch">Architecture</span>
+      <h2>System Architecture</h2>
+      <p class="subtitle">How the browser, Next.js, Supabase, and Google OAuth connect together.</p>
+      <div class="mermaid">
+flowchart LR
+    subgraph client ["Browser"]
+        webapp[TongJod Web App]
+    end
+    subgraph gateway ["Vercel Edge"]
+        cdn[CDN / Edge Network]
+    end
+    subgraph service ["Next.js App Router"]
+        authMW[Auth Middleware]
+        dashPage[Dashboard]
+        formPage[Form]
+        budgetPage[Budget]
+    end
+    subgraph datastore ["Supabase"]
+        pgDB[(PostgreSQL)]
+        authStore[(Auth Store)]
+    end
+    subgraph external ["External"]
+        googleOAuth[Google OAuth]
+    end
+
+    webapp -->|"HTTPS"| cdn
+    cdn -->|"Request"| authMW
+    authMW -->|"Authenticated"| dashPage
+    authMW -->|"Authenticated"| formPage
+    authMW -->|"Authenticated"| budgetPage
+    authMW --> authStore
+    dashPage -->|"Read / Write"| pgDB
+    formPage -->|"Write"| pgDB
+    budgetPage -->|"Read / Write"| pgDB
+    authMW -.->|"Google OAuth: Login"| googleOAuth
+
+    style client fill:#C2E5FF,stroke:#3DADFF
+    style gateway fill:#CDF4D3,stroke:#66D575
+    style service fill:#DCCCFF,stroke:#874FFF
+    style datastore fill:#FFECBD,stroke:#FFC943
+    style external fill:#FFE0C2,stroke:#FF9E42
+      </div>
+    </div>
+
+    <!-- 2. Database Schema + Form Flow side by side -->
+    <div class="two-col">
+
+      <!-- Database ER Diagram -->
+      <div class="diagram-card">
+        <span class="diagram-tag tag-db">Database</span>
+        <h2>Database Schema</h2>
+        <p class="subtitle">4 tables with relationships and key columns.</p>
+        <div class="mermaid">
+erDiagram
+    PROFILES ||--o{ CATEGORIES : owns
+    PROFILES ||--o{ TRANSACTIONS : records
+    PROFILES ||--o{ BUDGETS : sets
+    CATEGORIES ||--o{ TRANSACTIONS : categorizes
+    CATEGORIES ||--o{ BUDGETS : limits
+
+    PROFILES {
+        uuid id PK
+        string email UK
+        string displayName
+        string language "th or en"
+    }
+    CATEGORIES {
+        uuid id PK
+        uuid userId FK
+        string name
+        string type "income or expense"
+        bool isDeleted "soft delete"
+        int usageCount "sort order"
+    }
+    TRANSACTIONS {
+        uuid id PK
+        uuid userId FK
+        string type "income or expense"
+        decimal amount
+        uuid categoryId FK
+        string note "nullable"
+        date date
+    }
+    BUDGETS {
+        uuid id PK
+        uuid userId FK
+        uuid categoryId FK
+        decimal amount
+    }
+        </div>
+      </div>
+
+      <!-- Form Step Flow -->
+      <div class="diagram-card">
+        <span class="diagram-tag tag-flow">Form Flow</span>
+        <h2>Step-by-Step Form</h2>
+        <p class="subtitle">Conversational entry — one question at a time with slide animations.</p>
+        <div class="mermaid">
+flowchart TD
+    openForm([Open Form])
+    editLast[Edit Last Entry]
+    step1[Step 1: Income or Expense]
+    step2[Step 2: Enter Amount]
+    step3[Step 3: Pick Category]
+    step4[Step 4: Add Note - Optional]
+    step5[Step 5: Set Date]
+    step6[Step 6: Review Entry]
+    saved([Entry Saved])
+
+    openForm --> step1
+    openForm -.->|"tap edit last"| editLast
+    editLast -->|"pre-fill form"| step1
+    step1 --> step2
+    step2 --> step3
+    step3 --> step4
+    step4 --> step5
+    step5 --> step6
+    step6 --> saved
+
+    style openForm fill:#CDF4D3,stroke:#66D575
+    style saved fill:#CDF4D3,stroke:#66D575
+    style editLast fill:#FFECBD,stroke:#FFC943
+    style step1 fill:#DCCCFF,stroke:#874FFF
+    style step2 fill:#DCCCFF,stroke:#874FFF
+    style step3 fill:#DCCCFF,stroke:#874FFF
+    style step4 fill:#DCCCFF,stroke:#874FFF
+    style step5 fill:#DCCCFF,stroke:#874FFF
+    style step6 fill:#DCCCFF,stroke:#874FFF
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. Budget Status Logic -->
+    <div class="diagram-card">
+      <span class="diagram-tag tag-logic">Budget Logic</span>
+      <h2>Budget Status Calculation</h2>
+      <p class="subtitle">How the app decides which theme and status message to show each day.</p>
+      <div class="mermaid">
+flowchart LR
+    start([Load Dashboard])
+    checkBudget{Budget set?}
+    calcExpected[Expected Progress]
+    calcActual[Actual Progress]
+    compare{Actual vs Expected}
+    neutral[Default Theme]
+    overBudget[Over Budget]
+    onTrack[On Track]
+    excellent[Excellent]
+    redTheme[Red Gradient]
+    yellowTheme[Yellow Gradient]
+    greenTheme[Green Gradient]
+    phraseOver[Random Thai Phrase x3]
+    phraseTrack[Random Thai Phrase x3]
+    phraseExcellent[Random Thai Phrase x3]
+
+    start --> checkBudget
+    checkBudget -->|"No budget"| neutral
+    checkBudget -->|"Budget exists"| calcExpected
+    calcExpected -->|"days elapsed / total days"| calcActual
+    calcActual -->|"total expense / total budget"| compare
+    compare -->|"Actual > Expected"| overBudget
+    compare -->|"Within 10% below"| onTrack
+    compare -->|"More than 10% below"| excellent
+    overBudget --> redTheme
+    onTrack --> yellowTheme
+    excellent --> greenTheme
+    redTheme --> phraseOver
+    yellowTheme --> phraseTrack
+    greenTheme --> phraseExcellent
+
+    subgraph calc ["Progress Calculation"]
+        calcExpected
+        calcActual
+        compare
+    end
+
+    style calc fill:#C2E5FF,stroke:#3DADFF
+    style overBudget fill:#FFCDC2,stroke:#FF7556
+    style onTrack fill:#FFECBD,stroke:#FFC943
+    style excellent fill:#CDF4D3,stroke:#66D575
+    style redTheme fill:#FFCDC2,stroke:#FF7556
+    style yellowTheme fill:#FFECBD,stroke:#FFC943
+    style greenTheme fill:#CDF4D3,stroke:#66D575
+    style neutral fill:#D9D9D9,stroke:#B3B3B3
+    style phraseOver fill:#FFCDC2,stroke:#FF7556
+    style phraseTrack fill:#FFECBD,stroke:#FFC943
+    style phraseExcellent fill:#CDF4D3,stroke:#66D575
+      </div>
+    </div>
+
+    <!-- 4. Page Navigation -->
+    <div class="diagram-card">
+      <span class="diagram-tag tag-flow">Navigation</span>
+      <h2>Page Navigation Flow</h2>
+      <p class="subtitle">User journey from login to each section of the app.</p>
+      <div class="mermaid">
+flowchart LR
+    landing([Landing Page])
+    googleLogin[Google Sign In]
+    firstTime{First time?}
+    seedData[Seed Preset Categories]
+    dashboard[Dashboard]
+    form[Form Page]
+    budget[Budget Page]
+    notAuth{Authenticated?}
+
+    landing --> googleLogin
+    googleLogin --> firstTime
+    firstTime -->|"Yes"| seedData
+    firstTime -->|"No"| dashboard
+    seedData --> dashboard
+    dashboard --> form
+    dashboard --> budget
+    form --> dashboard
+    budget --> dashboard
+    notAuth -->|"No"| landing
+    notAuth -->|"Yes"| dashboard
+
+    style landing fill:#CDF4D3,stroke:#66D575
+    style dashboard fill:#DCCCFF,stroke:#874FFF
+    style form fill:#C2E5FF,stroke:#3DADFF
+    style budget fill:#FFECBD,stroke:#FFC943
+    style seedData fill:#FFE0C2,stroke:#FF9E42
+    style googleLogin fill:#CDF4D3,stroke:#66D575
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#DCCCFF',
+        primaryTextColor: '#1C1917',
+        primaryBorderColor: '#874FFF',
+        lineColor: '#78716C',
+        secondaryColor: '#C2E5FF',
+        tertiaryColor: '#CDF4D3',
+        background: '#ffffff',
+        mainBkg: '#ffffff',
+        nodeBorder: '#E7E2D9',
+        clusterBkg: '#F7F5F1',
+        titleColor: '#1C1917',
+        edgeLabelBackground: '#ffffff',
+        fontFamily: 'Inter, Segoe UI, sans-serif',
+        fontSize: '14px'
+      },
+      flowchart: {
+        curve: 'basis',
+        padding: 20
+      },
+      er: {
+        diagramPadding: 20,
+        layoutDirection: 'TB',
+        minEntityWidth: 100,
+        minEntityHeight: 75,
+        entityPadding: 15
+      }
+    });
+  </script>
+
+</body>
+</html>

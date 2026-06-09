@@ -3,8 +3,15 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
+
+  // Vercel's reverse proxy rewrites request.url to localhost internally.
+  // Read the real public origin from forwarded headers instead.
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? 'localhost:3000'
+  const proto = request.headers.get('x-forwarded-proto') ?? 'http'
+  const origin = `${proto}://${host}`
+
   if (!code) return NextResponse.redirect(`${origin}/`)
 
   const cookieStore = await cookies()

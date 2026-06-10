@@ -106,7 +106,6 @@ export default function FormPage() {
         {step === 1 && (
           <>
             <StepType
-              lang={lang}
               onSelect={(type) => { setDraft((d) => ({ ...d, type })); advance() }}
             />
             {transactions.length > 0 && (

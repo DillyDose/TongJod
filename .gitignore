@@ -20,3 +20,7 @@ npm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design reference artifacts (no longer needed after redesign)
+stitch_output/
+*.zip

@@ -1,11 +1,8 @@
-import type { Lang } from '@/lib/types'
-
 interface Props {
-  lang: Lang
   onSelect: (type: 'income' | 'expense') => void
 }
 
-export function StepType({ lang, onSelect }: Props) {
+export function StepType({ onSelect }: Props) {
   return (
     <div>
       {/* Heading section */}
@@ -62,7 +59,6 @@ export function StepType({ lang, onSelect }: Props) {
             e.currentTarget.style.boxShadow = '0 4px 0 0 #16A34A'
           }}
         >
-          {/* Icon circle */}
           <div
             style={{
               width: 48,
@@ -79,7 +75,6 @@ export function StepType({ lang, onSelect }: Props) {
           >
             ↓
           </div>
-          {/* Label */}
           <span
             style={{
               fontFamily: 'var(--font-thai)',
@@ -121,7 +116,6 @@ export function StepType({ lang, onSelect }: Props) {
             e.currentTarget.style.boxShadow = '0 4px 0 0 #DC2626'
           }}
         >
-          {/* Icon circle */}
           <div
             style={{
               width: 48,
@@ -138,7 +132,6 @@ export function StepType({ lang, onSelect }: Props) {
           >
             ↑
           </div>
-          {/* Label */}
           <span
             style={{
               fontFamily: 'var(--font-thai)',

@@ -2,23 +2,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg-base: #F7F5F1;
-  --surface: #FFFFFF;
-  --surface-secondary: #F0EDE8;
-  --text-primary: #1C1917;
-  --text-secondary: #78716C;
-  --text-muted: #A8A29E;
-  --border: #E7E2D9;
+  --bg-base: #fff8f5;
+  --surface: #ffffff;
+  --surface-secondary: #f4ece8;
+  --text-primary: #1e1b19;
+  --text-secondary: #777777;
+  --text-muted: #AAAAAA;
+  --border: #E5E5E5;
 
   /* theme vars — overridden at runtime by ThemeProvider */
-  --accent: #78716C;
-  --accent-light: #A8A29E;
-  --bar: #A8A29E;
-  --pill-bg: #F0EDE8;
-  --pill-text: #57534E;
-  --card-tint: rgba(120, 113, 108, 0.06);
-  --focus-ring: rgba(120, 113, 108, 0.15);
-  --app-gradient: linear-gradient(135deg, #F7F5F1 0%, #EDE9E3 100%);
+  --accent: #58CC02;
+  --accent-light: #89E219;
+  --accent-shadow: #58A700;
+  --bar: #58CC02;
+  --pill-bg: #DCFCE7;
+  --pill-text: #15803D;
+  --card-tint: rgba(88, 204, 2, 0.06);
+  --focus-ring: rgba(88, 204, 2, 0.20);
+  --app-gradient: linear-gradient(135deg, #58CC02 0%, #4aaa00 100%);
 
   /* spacing */
   --xs: 4px;
@@ -32,14 +33,14 @@
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 16px;
-  --r-xl: 24px;
+  --r-xl: 20px;
   --r-full: 9999px;
 
-  /* shadows */
-  --sh-card: 0px 2px 12px rgba(28, 25, 23, 0.07);
-  --sh-card-hover: 0px 4px 20px rgba(28, 25, 23, 0.12);
-  --sh-button: 0px 2px 8px rgba(28, 25, 23, 0.10);
-  --sh-nav: 0px -2px 16px rgba(28, 25, 23, 0.06);
+  /* shadows — Duolingo lifted style */
+  --sh-card: 0 4px 0 0 #E5E5E5;
+  --sh-card-hover: 0 6px 0 0 #D0D0D0;
+  --sh-button: 0 4px 0 0 var(--accent-shadow);
+  --sh-nav: 0 -4px 0 0 #E5E5E5;
 
   --font-display: 'Plus Jakarta Sans', 'Noto Sans Thai', sans-serif;
   --font-body: 'Inter', 'Noto Sans Thai', sans-serif;
@@ -79,16 +80,16 @@ body {
 }
 .scroll-hidden::-webkit-scrollbar { display: none; }
 
-/* Card */
+/* Card — lifted Duolingo style */
 .tj-card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border: 1px solid #f0f0f0;
+  border-radius: var(--r-xl);
   padding: var(--md);
   box-shadow: var(--sh-card);
 }
 
-/* Primary button */
+/* Primary button — lifted with status shadow */
 .tj-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -99,16 +100,20 @@ body {
   appearance: none;
   background: var(--accent);
   color: #fff;
-  border-radius: var(--r-md);
-  padding: 14px 24px;
+  border-radius: 16px;
+  padding: 0 24px;
+  height: 56px;
   font-family: var(--font-body);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
   box-shadow: var(--sh-button);
-  transition: transform 120ms ease-out, filter 150ms ease-out;
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
 }
-.tj-btn-primary:hover  { filter: brightness(0.92); }
-.tj-btn-primary:active { transform: scale(0.97); }
+.tj-btn-primary:hover  { filter: brightness(0.95); }
+.tj-btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 var(--accent-shadow);
+}
 .tj-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
 /* Ghost button */
@@ -121,12 +126,13 @@ body {
   appearance: none;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 12px 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 0 20px;
+  height: 48px;
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 15px;
+  font-size: 14px;
   transition: transform 120ms ease-out, background 150ms;
 }
 .tj-btn-ghost:hover  { background: rgba(0, 0, 0, 0.03); }
@@ -135,7 +141,7 @@ body {
 /* Input */
 .tj-input {
   width: 100%;
-  background: var(--surface);
+  background: #F7F7F7;
   border: 1.5px solid var(--border);
   border-radius: var(--r-md);
   padding: 14px 16px;
@@ -148,6 +154,7 @@ body {
 .tj-input:focus {
   outline: none;
   border-color: var(--accent);
+  border-width: 2px;
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 

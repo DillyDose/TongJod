@@ -11,6 +11,7 @@ import { StepCategory } from '@/components/form/StepCategory'
 import { StepNote } from '@/components/form/StepNote'
 import { StepDate } from '@/components/form/StepDate'
 import { StepConfirm } from '@/components/form/StepConfirm'
+import { StepSuccess } from '@/components/form/StepSuccess'
 import { useCategories } from '@/hooks/useCategories'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useLang } from '@/hooks/useLang'
@@ -33,7 +34,7 @@ export default function FormPage() {
   const [step, setStep] = useState(1)
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
   const [draft, setDraft] = useState<Draft>({})
-  const [toast, setToast] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
 
   const now = new Date()
@@ -88,8 +89,7 @@ export default function FormPage() {
     } else {
       await addTransaction(tx)
     }
-    setToast(true)
-    setTimeout(() => { setToast(false); router.push('/dashboard') }, 1500)
+    setSaved(true)
   }
 
   const isDraftComplete =
@@ -168,7 +168,6 @@ export default function FormPage() {
 
         {step === 6 && isDraftComplete && (
           <StepConfirm
-            lang={lang}
             draft={draft as Required<Draft>}
             categories={categories}
             onSave={handleSave}
@@ -177,28 +176,14 @@ export default function FormPage() {
         )}
       </FormShell>
 
-      {toast && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 84,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'var(--text-primary)',
-            color: '#fff',
-            padding: '12px 20px',
-            borderRadius: 999,
-            fontSize: 14,
-            fontWeight: 600,
-            fontFamily: 'var(--font-thai)',
-            boxShadow: '0 8px 24px rgba(28,25,23,0.3)',
-            zIndex: 60,
-            whiteSpace: 'nowrap',
-          }}
-          className="anim-card"
-        >
-          {t('saved', lang)}
-        </div>
+      {saved && draft.type && draft.amount && draft.categoryId && (
+        <StepSuccess
+          amount={draft.amount}
+          type={draft.type}
+          categoryId={draft.categoryId}
+          categories={categories}
+          onHome={() => router.push('/dashboard')}
+        />
       )}
 
       <BottomNav lang={lang} />

@@ -44,12 +44,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const r = document.documentElement.style
     r.setProperty('--accent', theme.accent)
     r.setProperty('--accent-light', theme.accentLight)
+    r.setProperty('--accent-shadow', theme.shadow)
     r.setProperty('--bar', theme.bar)
     r.setProperty('--pill-bg', theme.pillBg)
     r.setProperty('--pill-text', theme.pillText)
     r.setProperty('--card-tint', theme.cardTint)
     r.setProperty('--focus-ring', theme.focusRing)
     r.setProperty('--app-gradient', theme.gradient)
+    r.setProperty('--sh-button', `0 4px 0 0 ${theme.shadow}`)
   }, [theme])
 
   function setSpendingData(expense: number, budget: number) {

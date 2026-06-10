@@ -43,6 +43,7 @@ export interface Theme {
   gradient: string
   accent: string
   accentLight: string
+  shadow: string
   cardTint: string
   bar: string
   pillBg: string

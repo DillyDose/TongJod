@@ -1,4 +1,5 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
 import { t } from '@/lib/i18n'
 import { fmt } from '@/lib/theme'
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function TopCategories({ transactions, categories, lang }: Props) {
+  const router = useRouter()
   const { theme } = useTheme()
   const expenses = transactions.filter((tx) => tx.type === 'expense')
 
@@ -24,7 +26,7 @@ export function TopCategories({ transactions, categories, lang }: Props) {
     }))
     .filter((c) => c.total > 0)
     .sort((a, b) => b.total - a.total)
-    .slice(0, 5)
+    .slice(0, 3)
 
   const max = totals[0]?.total ?? 1
 
@@ -32,16 +34,38 @@ export function TopCategories({ transactions, categories, lang }: Props) {
     <div className="tj-card anim-card">
       <div
         style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 600,
-          fontSize: 15,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: 16,
         }}
       >
-        {t('topCategories', lang)}
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 600,
+            fontSize: 15,
+          }}
+        >
+          {t('topCategories', lang)}
+        </div>
+        <button
+          onClick={() => router.push('/budget')}
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--accent)',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-thai)',
+          }}
+        >
+          ดูทั้งหมด →
+        </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {totals.map(({ name, total }) => (
           <div key={name}>
             <div
@@ -57,7 +81,7 @@ export function TopCategories({ transactions, categories, lang }: Props) {
               </span>
               <span style={{ color: 'var(--text-secondary)' }}>฿{fmt(total)}</span>
             </div>
-            <div style={{ height: 8, borderRadius: 999, background: 'var(--surface-secondary)' }}>
+            <div style={{ height: 6, borderRadius: 999, background: 'var(--surface-secondary)' }}>
               <div
                 style={{
                   height: '100%',

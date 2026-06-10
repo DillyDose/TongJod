@@ -160,7 +160,6 @@ export default function FormPage() {
 
         {step === 5 && (
           <StepDate
-            lang={lang}
             initial={draft.date}
             onNext={(date) => { setDraft((d) => ({ ...d, date })); advance() }}
           />

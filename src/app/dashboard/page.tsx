@@ -76,65 +76,63 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      {/* Header */}
-      <div
-        style={{
-          height: 56,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
-          flexShrink: 0,
-        }}
-      >
-        <button
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'var(--font-thai)',
-            fontWeight: 600,
-            fontSize: 15,
-            color: 'var(--text-primary)',
-          }}
-        >
-          {monthLabel} <ChevronDown size={16} />
-        </button>
-
-        <button
-          onClick={() => setLang(lang === 'th' ? 'en' : 'th')}
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--r-full)',
-            padding: '4px 12px',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-          }}
-        >
-          <Globe size={13} />
-          {lang === 'th' ? 'TH · EN' : 'EN · TH'}
-        </button>
-      </div>
-
       {/* Scrollable content */}
       <div
         className="scroll-hidden"
         style={{
           flex: 1,
-          padding: '8px 16px 16px',
+          padding: '8px 16px 96px',
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
         }}
       >
+        {/* Month selector row */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px 0 0',
+          }}
+        >
+          <button
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-thai)',
+              fontWeight: 600,
+              fontSize: 15,
+              color: 'var(--text-primary)',
+            }}
+          >
+            {monthLabel} <ChevronDown size={16} />
+          </button>
+
+          <button
+            onClick={() => setLang(lang === 'th' ? 'en' : 'th')}
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--r-full)',
+              padding: '4px 12px',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <Globe size={13} />
+            {lang === 'th' ? 'TH · EN' : 'EN · TH'}
+          </button>
+        </div>
+
         <BudgetProgress expectedPct={expectedPct} actualPct={actualPct} lang={lang} totalBudget={totalBudget} totalExpense={totalExpense} />
         <SummaryCards transactions={transactions} daysElapsed={daysElapsed} lang={lang} />
         <DailyChart transactions={transactions} daysInMonth={daysInMonth} lang={lang} />

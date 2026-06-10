@@ -12,12 +12,21 @@ import { useBudgets } from '@/hooks/useBudgets'
 import { useLang } from '@/hooks/useLang'
 import { t } from '@/lib/i18n'
 import { fmt } from '@/lib/theme'
+import { useTheme } from '@/components/ThemeProvider'
+
+const ICON_MAP: Record<string, string> = {
+  'อาหาร': 'restaurant', 'เดินทาง': 'directions_car', 'ช็อปปิ้ง': 'shopping_bag',
+  'บันเทิง': 'movie', 'สุขภาพ': 'favorite', 'ค่าเช่า': 'home',
+  'สาธารณูปโภค': 'bolt', 'การศึกษา': 'school', 'ดูแลตัวเอง': 'spa', 'อื่นๆ': 'more_horiz',
+  'เงินเดือน': 'payments', 'ฟรีแลนซ์': 'laptop_mac', 'ลงทุน': 'trending_up', 'ของขวัญ': 'card_giftcard',
+}
 
 export default function BudgetPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [lang] = useLang()
   const [sheet, setSheet] = useState<'income' | 'expense' | null>(null)
+  const { theme } = useTheme()
 
   const { categories, addCategory, deleteCategory } = useCategories(userId)
   const { budgets, setBudget, totalBudget } = useBudgets(userId)
@@ -52,8 +61,32 @@ export default function BudgetPage() {
             fontSize: 18,
           }}
         >
-          {t('budgetTitle', lang)}
+          งบประมาณ
         </h2>
+      </div>
+
+      {/* Total budget display */}
+      <div style={{ padding: '0 16px 16px', textAlign: 'center' }}>
+        <div
+          style={{
+            fontSize: 32,
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
+            color: theme.accent,
+          }}
+        >
+          ฿{fmt(totalBudget)}
+        </div>
+        <div
+          style={{
+            fontSize: 13,
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-thai)',
+            marginTop: 2,
+          }}
+        >
+          งบทั้งหมดเดือนนี้
+        </div>
       </div>
 
       <div
@@ -64,13 +97,11 @@ export default function BudgetPage() {
         <div className="tj-card">
           <div
             style={{
+              fontSize: 14,
               fontWeight: 700,
-              fontSize: 13,
               color: 'var(--text-secondary)',
-              marginBottom: 4,
               fontFamily: 'var(--font-thai)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              marginBottom: 8,
             }}
           >
             {t('expense', lang)}
@@ -85,6 +116,7 @@ export default function BudgetPage() {
               onBudgetChange={setBudget}
               onDelete={deleteCategory}
               showAmount
+              icon={ICON_MAP[cat.name] ?? 'category'}
             />
           ))}
 
@@ -130,13 +162,11 @@ export default function BudgetPage() {
         <div className="tj-card">
           <div
             style={{
+              fontSize: 14,
               fontWeight: 700,
-              fontSize: 13,
               color: 'var(--text-secondary)',
-              marginBottom: 4,
               fontFamily: 'var(--font-thai)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              marginBottom: 8,
             }}
           >
             {t('income', lang)}
@@ -150,6 +180,7 @@ export default function BudgetPage() {
               onBudgetChange={() => {}}
               onDelete={deleteCategory}
               showAmount={false}
+              icon={ICON_MAP[cat.name] ?? 'category'}
             />
           ))}
 

@@ -1,5 +1,3 @@
-import { TrendingUp, TrendingDown } from 'lucide-react'
-import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/types'
 
 interface Props {
@@ -8,59 +6,150 @@ interface Props {
 }
 
 export function StepType({ lang, onSelect }: Props) {
-  const options = [
-    { type: 'income'  as const, Icon: TrendingUp,   bg: 'rgba(16,185,129,0.08)', color: '#059669' },
-    { type: 'expense' as const, Icon: TrendingDown,  bg: 'rgba(239,68,68,0.08)',  color: '#DC2626' },
-  ]
-
   return (
     <div>
+      {/* Heading section */}
       <h1
         style={{
-          fontFamily: 'var(--font-display)',
+          fontFamily: 'var(--font-thai)',
           fontWeight: 700,
-          fontSize: 24,
-          marginBottom: 32,
+          fontSize: 28,
+          marginBottom: 8,
           textAlign: 'center',
         }}
       >
-        {t('formType', lang)}
+        เลือกประเภท
       </h1>
+      <p
+        style={{
+          fontSize: 14,
+          color: 'var(--text-secondary)',
+          textAlign: 'center',
+          marginBottom: 32,
+        }}
+      >
+        รายรับหรือรายจ่าย?
+      </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {options.map(({ type, Icon, bg, color }) => (
-          <button
-            key={type}
-            onClick={() => onSelect(type)}
+      {/* Income and Expense cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Income Card */}
+        <button
+          onClick={() => onSelect('income')}
+          style={{
+            width: '100%',
+            borderRadius: 20,
+            padding: '24px 20px',
+            cursor: 'pointer',
+            transition: 'transform 120ms ease-out, box-shadow 120ms ease-out',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            background: 'rgba(34, 197, 94, 0.08)',
+            border: '2px solid #22C55E',
+            boxShadow: '0 4px 0 0 #16A34A',
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = 'translateY(2px)'
+            e.currentTarget.style.boxShadow = '0 2px 0 0 #16A34A'
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = 'none'
+            e.currentTarget.style.boxShadow = '0 4px 0 0 #16A34A'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'none'
+            e.currentTarget.style.boxShadow = '0 4px 0 0 #16A34A'
+          }}
+        >
+          {/* Icon circle */}
+          <div
             style={{
+              width: 48,
+              height: 48,
+              borderRadius: 9999,
+              background: '#22C55E',
               display: 'flex',
               alignItems: 'center',
-              gap: 16,
-              background: bg,
-              border: `1.5px solid ${color}20`,
-              borderRadius: 'var(--r-lg)',
-              padding: '20px 24px',
-              cursor: 'pointer',
-              transition: 'transform 120ms ease-out',
-              width: '100%',
+              justifyContent: 'center',
+              fontSize: 24,
+              color: 'white',
+              flexShrink: 0,
             }}
-            onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
-            onMouseUp={(e) => (e.currentTarget.style.transform = 'none')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
           >
-            <Icon size={28} color={color} />
-            <span
-              style={{
-                fontFamily: 'var(--font-thai)',
-                fontWeight: 600,
-                fontSize: 18,
-                color: 'var(--text-primary)',
-              }}
-            >
-              {t(type, lang)}
-            </span>
-          </button>
-        ))}
+            ↓
+          </div>
+          {/* Label */}
+          <span
+            style={{
+              fontFamily: 'var(--font-thai)',
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#15803D',
+            }}
+          >
+            รายรับ
+          </span>
+        </button>
+
+        {/* Expense Card */}
+        <button
+          onClick={() => onSelect('expense')}
+          style={{
+            width: '100%',
+            borderRadius: 20,
+            padding: '24px 20px',
+            cursor: 'pointer',
+            transition: 'transform 120ms ease-out, box-shadow 120ms ease-out',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '2px solid #EF4444',
+            boxShadow: '0 4px 0 0 #DC2626',
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = 'translateY(2px)'
+            e.currentTarget.style.boxShadow = '0 2px 0 0 #DC2626'
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = 'none'
+            e.currentTarget.style.boxShadow = '0 4px 0 0 #DC2626'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'none'
+            e.currentTarget.style.boxShadow = '0 4px 0 0 #DC2626'
+          }}
+        >
+          {/* Icon circle */}
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 9999,
+              background: '#EF4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 24,
+              color: 'white',
+              flexShrink: 0,
+            }}
+          >
+            ↑
+          </div>
+          {/* Label */}
+          <span
+            style={{
+              fontFamily: 'var(--font-thai)',
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#DC2626',
+            }}
+          >
+            รายจ่าย
+          </span>
+        </button>
       </div>
     </div>
   )

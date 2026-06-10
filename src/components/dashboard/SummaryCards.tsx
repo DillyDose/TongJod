@@ -20,7 +20,7 @@ export function SummaryCards({ transactions, daysElapsed, lang }: Props) {
       {/* Income card */}
       <div
         className="tj-card anim-card"
-        style={{ background: 'rgba(16, 185, 129, 0.06)', animationDelay: '60ms' }}
+        style={{ borderLeft: '4px solid #22C55E', paddingLeft: 12, animationDelay: '60ms' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <TrendingUp size={16} color="#059669" />
@@ -40,7 +40,7 @@ export function SummaryCards({ transactions, daysElapsed, lang }: Props) {
       {/* Expense card */}
       <div
         className="tj-card anim-card"
-        style={{ background: 'rgba(239, 68, 68, 0.06)', animationDelay: '120ms' }}
+        style={{ borderLeft: '4px solid #EF4444', paddingLeft: 12, animationDelay: '120ms' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <TrendingDown size={16} color="#DC2626" />

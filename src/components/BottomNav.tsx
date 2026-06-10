@@ -19,11 +19,10 @@ export function BottomNav({ lang }: { lang: Lang }) {
   return (
     <div
       style={{
-        height: 64,
+        height: 80,
         flexShrink: 0,
         background: 'var(--surface)',
-        borderTop: '1px solid var(--border)',
-        boxShadow: 'var(--sh-nav)',
+        boxShadow: '0 -4px 0 0 #E5E5E5',
         display: 'flex',
         alignItems: 'stretch',
       }}
@@ -41,21 +40,45 @@ export function BottomNav({ lang }: { lang: Lang }) {
                 onClick={() => router.push(path)}
                 aria-label={label}
                 style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 18,
+                  width: 54,
+                  height: 54,
+                  borderRadius: 16,
                   border: 'none',
                   cursor: 'pointer',
-                  background: `linear-gradient(135deg, ${theme.accentLight}, ${theme.accent})`,
-                  boxShadow: `0 6px 16px ${theme.cardTint}, var(--sh-button)`,
+                  background: theme.accent,
+                  boxShadow: `0 4px 0 0 ${theme.shadow}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transform: active ? 'translateY(-2px)' : 'none',
-                  transition: 'transform 160ms ease-out',
+                  transition: 'transform 100ms ease-out, box-shadow 100ms ease-out',
+                }}
+                onMouseDown={e => {
+                  const el = e.currentTarget
+                  el.style.transform = 'translateY(2px)'
+                  el.style.boxShadow = `0 2px 0 0 ${theme.shadow}`
+                }}
+                onMouseUp={e => {
+                  const el = e.currentTarget
+                  el.style.transform = 'none'
+                  el.style.boxShadow = `0 4px 0 0 ${theme.shadow}`
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget
+                  el.style.transform = 'none'
+                  el.style.boxShadow = `0 4px 0 0 ${theme.shadow}`
+                }}
+                onTouchStart={e => {
+                  const el = e.currentTarget
+                  el.style.transform = 'translateY(2px)'
+                  el.style.boxShadow = `0 2px 0 0 ${theme.shadow}`
+                }}
+                onTouchEnd={e => {
+                  const el = e.currentTarget
+                  el.style.transform = 'none'
+                  el.style.boxShadow = `0 4px 0 0 ${theme.shadow}`
                 }}
               >
-                <Icon size={26} color="#fff" strokeWidth={2.4} />
+                <Icon size={28} color="#fff" strokeWidth={2.4} />
               </button>
             </div>
           )
@@ -75,39 +98,36 @@ export function BottomNav({ lang }: { lang: Lang }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 4,
-              position: 'relative',
             }}
           >
-            {active && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 9,
-                  width: 16,
-                  height: 3,
-                  borderRadius: 999,
-                  background: theme.accent,
-                }}
+            <span
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                background: active ? theme.pillBg : 'transparent',
+                borderRadius: active ? 12 : 0,
+                padding: active ? '8px 16px' : '8px 16px',
+              }}
+            >
+              <Icon
+                size={22}
+                color={active ? theme.accent : '#AAAAAA'}
+                strokeWidth={active ? 2.3 : 2}
               />
-            )}
-            <Icon
-              size={22}
-              color={active ? theme.accent : 'var(--text-muted)'}
-              strokeWidth={active ? 2.3 : 2}
-            />
-            {active && (
               <span
                 style={{
                   fontFamily: 'var(--font-thai)',
                   fontSize: 12,
-                  fontWeight: 600,
-                  color: theme.accent,
+                  fontWeight: active ? 700 : 400,
+                  color: active ? theme.accent : '#AAAAAA',
                   whiteSpace: 'nowrap',
                 }}
               >
                 {label}
               </span>
-            )}
+            </span>
           </button>
         )
       })}

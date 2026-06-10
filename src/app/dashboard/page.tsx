@@ -135,7 +135,7 @@ export default function DashboardPage() {
           gap: 12,
         }}
       >
-        <BudgetProgress expectedPct={expectedPct} actualPct={actualPct} lang={lang} />
+        <BudgetProgress expectedPct={expectedPct} actualPct={actualPct} lang={lang} totalBudget={totalBudget} totalExpense={totalExpense} />
         <SummaryCards transactions={transactions} daysElapsed={daysElapsed} lang={lang} />
         <DailyChart transactions={transactions} daysInMonth={daysInMonth} lang={lang} />
         <TopCategories transactions={transactions} categories={categories} lang={lang} />

@@ -18,13 +18,24 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
         style={{
           fontFamily: 'var(--font-display)',
           fontWeight: 700,
-          fontSize: 24,
-          marginBottom: 32,
+          fontSize: 28,
+          marginBottom: 8,
           textAlign: 'center',
         }}
       >
-        {t('formNote', lang)}
+        เพิ่มหมายเหตุ
       </h1>
+
+      <div
+        style={{
+          fontSize: 14,
+          color: 'var(--text-secondary)',
+          textAlign: 'center',
+          marginBottom: 28,
+        }}
+      >
+        ใส่รายละเอียดเพิ่มเติม (ถ้ามี)
+      </div>
 
       <input
         type="text"
@@ -33,7 +44,12 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
         onChange={(e) => setValue(e.target.value)}
         placeholder={t('notePlaceholder', lang)}
         className="tj-input"
-        style={{ marginBottom: 16 }}
+        style={{
+          marginBottom: 16,
+          fontSize: 16,
+          minHeight: 56,
+          resize: 'none',
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') value ? onNext(value) : onSkip()
         }}
@@ -49,7 +65,7 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
       </button>
 
       <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onSkip}>
-        {t('skip', lang)} →
+        ข้าม
       </button>
     </div>
   )

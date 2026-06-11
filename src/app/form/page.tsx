@@ -251,7 +251,8 @@ export default function FormPage() {
             saving={saving}
             error={saveError}
             onSave={handleSave}
-            onEdit={() => { setAnimDir('back'); setStep(1) }}
+            onEdit={editId ? undefined : () => { setAnimDir('back'); setStep(1) }}
+            onCancel={editId ? () => router.push('/dashboard') : undefined}
           />
         )}
       </FormShell>

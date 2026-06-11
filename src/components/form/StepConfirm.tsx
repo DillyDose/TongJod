@@ -18,7 +18,10 @@ interface Props {
   saving: boolean
   error: boolean
   onSave: () => void
-  onEdit: () => void
+  /** New-entry mode: walk back through the form steps to change a field. */
+  onEdit?: () => void
+  /** Edit-existing mode: discard changes and return to the dashboard. */
+  onCancel?: () => void
 }
 
 function ConfirmRow({ label, children, borderBottom }: { label: string; children: React.ReactNode; borderBottom?: boolean }) {
@@ -30,7 +33,7 @@ function ConfirmRow({ label, children, borderBottom }: { label: string; children
   )
 }
 
-export function StepConfirm({ lang, draft, categories, saving, error, onSave, onEdit }: Props) {
+export function StepConfirm({ lang, draft, categories, saving, error, onSave, onEdit, onCancel }: Props) {
   const cat = categories.find((c) => c.id === draft.categoryId)
   const typeColor = draft.type === 'income' ? '#22C55E' : '#EF4444'
   const typeLabel = draft.type === 'income' ? t('income', lang) : t('expense', lang)
@@ -50,35 +53,30 @@ export function StepConfirm({ lang, draft, categories, saving, error, onSave, on
       </h2>
 
       <div className="tj-card" style={{ marginBottom: 24 }}>
-        {/* Type row */}
         <ConfirmRow label={t('fType', lang)} borderBottom>
           <span style={{ fontWeight: 700, fontSize: 14, color: typeColor, fontFamily: 'var(--font-thai)' }}>
             {typeLabel}
           </span>
         </ConfirmRow>
 
-        {/* Amount row */}
         <ConfirmRow label={t('fAmount', lang)} borderBottom>
           <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
             ฿{fmt(Number(draft.amount))}
           </span>
         </ConfirmRow>
 
-        {/* Category row */}
         <ConfirmRow label={t('fCategory', lang)} borderBottom>
           <span style={{ fontWeight: 500, fontSize: 14, fontFamily: 'var(--font-thai)' }}>
             {cat?.name ?? '—'}
           </span>
         </ConfirmRow>
 
-        {/* Note row */}
         <ConfirmRow label={t('fNote', lang)} borderBottom>
           <span style={{ fontWeight: 400, fontSize: 14, color: draft.note ? 'var(--text-primary)' : 'var(--text-muted)', fontFamily: 'var(--font-thai)' }}>
             {draft.note || '—'}
           </span>
         </ConfirmRow>
 
-        {/* Date row — no bottom border */}
         <ConfirmRow label={t('fDate', lang)}>
           <span style={{ fontWeight: 500, fontSize: 14, fontFamily: 'var(--font-thai)' }}>
             {fmtDate(draft.date, lang)}
@@ -110,9 +108,18 @@ export function StepConfirm({ lang, draft, categories, saving, error, onSave, on
         {saving ? t('saving', lang) : t('save', lang)}
       </button>
 
-      <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onEdit} disabled={saving}>
-        {t('edit', lang)}
-      </button>
+      {/* New entry: แก้ไข walks back through the form steps.
+          Editing existing: ยกเลิกการแก้ไข discards and returns to dashboard. */}
+      {onEdit && (
+        <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onEdit} disabled={saving}>
+          {t('edit', lang)}
+        </button>
+      )}
+      {onCancel && (
+        <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onCancel} disabled={saving}>
+          {t('cancelEdit', lang)}
+        </button>
+      )}
     </div>
   )
 }

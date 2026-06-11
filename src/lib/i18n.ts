@@ -28,6 +28,7 @@ const STR: Record<string, Entry> = {
   save:            { th: 'บันทึก',                             en: 'Save' },
   edit:            { th: 'แก้ไข',                              en: 'Edit' },
   editLast:        { th: 'แก้ไขรายการล่าสุด',                  en: 'Edit last entry' },
+  cancelEdit:      { th: 'ยกเลิกการแก้ไข',                     en: 'Cancel editing' },
   saved:           { th: 'บันทึกแล้ว!',                        en: 'Saved!' },
   budgetTitle:     { th: 'ตั้งงบประมาณ',                       en: 'Set budget' },
   totalBudget:     { th: 'งบรวม',                              en: 'Total budget' },

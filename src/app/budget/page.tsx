@@ -57,7 +57,7 @@ export default function BudgetPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell nav={<BottomNav lang={lang} />}>
       {/* Header */}
       <div
         style={{
@@ -254,8 +254,6 @@ export default function BudgetPage() {
           onClose={() => setDeletedCat(null)}
         />
       )}
-
-      <BottomNav lang={lang} />
     </AppShell>
   )
 }

@@ -7,14 +7,21 @@ interface Props {
   lang: Lang
   initial?: string
   onNext: (date: string) => void
+  /** Mirrors the value to the parent as the user picks (for swipe-forward) */
+  onChange?: (date: string) => void
 }
 
-export function StepDate({ lang, initial, onNext }: Props) {
+export function StepDate({ lang, initial, onNext, onChange }: Props) {
   // Local-timezone dates — toISOString() is UTC and would shift the date
   // before 7am in Thailand
   const today = todayISO()
   const yesterday = yesterdayISO()
   const [value, setValue] = useState(initial ?? today)
+
+  function update(v: string) {
+    setValue(v)
+    onChange?.(v)
+  }
 
   return (
     <div>
@@ -55,7 +62,7 @@ export function StepDate({ lang, initial, onNext }: Props) {
           type="date"
           value={value}
           max={today}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => update(e.target.value)}
           style={{
             width: '100%',
             background: 'transparent',
@@ -72,7 +79,7 @@ export function StepDate({ lang, initial, onNext }: Props) {
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
         <button
-          onClick={() => setValue(today)}
+          onClick={() => update(today)}
           style={{
             flex: 1,
             height: 44,
@@ -89,7 +96,7 @@ export function StepDate({ lang, initial, onNext }: Props) {
           {t('today', lang)}
         </button>
         <button
-          onClick={() => setValue(yesterday)}
+          onClick={() => update(yesterday)}
           style={{
             flex: 1,
             height: 44,

@@ -21,6 +21,7 @@ import {
   fetchLatestTransaction,
   fetchTransactionById,
 } from '@/lib/db'
+import { todayISO } from '@/lib/dates'
 import type { Transaction } from '@/lib/types'
 
 interface Draft {
@@ -121,6 +122,28 @@ export default function FormPage() {
     }
   }
 
+  // Swipe left = same as pressing Continue; only when the current step
+  // has a valid value. Confirm (step 6) must be saved with an explicit tap.
+  function handleSwipeForward() {
+    if (saved || saving || step >= 6) return
+    if (step === 1 && !draft.type) return
+    if (step === 2 && !(Number(draft.amount) > 0)) return
+    if (step === 3 && !draft.categoryId) return
+    if (step === 4 && draft.note === undefined) {
+      setDraft((d) => ({ ...d, note: '' })) // swipe past note = skip
+    }
+    if (step === 5 && !draft.date) {
+      setDraft((d) => ({ ...d, date: todayISO() })) // untouched picker shows today
+    }
+    advance()
+  }
+
+  // Swipe right = same as the back arrow
+  function handleSwipeBack() {
+    if (saved || saving || step <= 1) return
+    goBack()
+  }
+
   function handleAddAnother() {
     window.history.replaceState(null, '', '/form')
     setDraft({ type: 'expense' })
@@ -139,12 +162,14 @@ export default function FormPage() {
     : { bg: '#FEE2E2', text: '#DC2626' }
 
   return (
-    <AppShell>
+    <AppShell nav={<BottomNav lang={lang} />}>
       <FormShell
         step={step}
         totalSteps={TOTAL_STEPS}
         onBack={goBack}
         animDir={animDir}
+        onSwipeForward={handleSwipeForward}
+        onSwipeBack={handleSwipeBack}
       >
         {step === 1 && (
           <StepType
@@ -186,6 +211,7 @@ export default function FormPage() {
             <StepAmount
               lang={lang}
               initial={draft.amount}
+              onChange={(amount) => setDraft((d) => ({ ...d, amount }))}
               onNext={(amount) => { setDraft((d) => ({ ...d, amount })); advance() }}
             />
 
@@ -225,6 +251,7 @@ export default function FormPage() {
           <StepNote
             lang={lang}
             initial={draft.note}
+            onChange={(note) => setDraft((d) => ({ ...d, note }))}
             onNext={(note) => { setDraft((d) => ({ ...d, note })); advance() }}
             onSkip={() => { setDraft((d) => ({ ...d, note: '' })); advance() }}
           />
@@ -234,6 +261,7 @@ export default function FormPage() {
           <StepDate
             lang={lang}
             initial={draft.date}
+            onChange={(date) => setDraft((d) => ({ ...d, date }))}
             onNext={(date) => { setDraft((d) => ({ ...d, date })); advance() }}
           />
         )}
@@ -262,8 +290,6 @@ export default function FormPage() {
           onAgain={handleAddAnother}
         />
       )}
-
-      <BottomNav lang={lang} />
     </AppShell>
   )
 }

@@ -6,11 +6,18 @@ interface Props {
   lang: Lang
   initial?: string
   onNext: (amount: string) => void
+  /** Mirrors the value to the parent as the user types (for swipe-forward) */
+  onChange?: (amount: string) => void
 }
 
-export function StepAmount({ lang, initial = '', onNext }: Props) {
+export function StepAmount({ lang, initial = '', onNext, onChange }: Props) {
   const [value, setValue] = useState(initial)
   const [activeQuickBtn, setActiveQuickBtn] = useState<number | null>(null)
+
+  function update(v: string) {
+    setValue(v)
+    onChange?.(v)
+  }
 
   const quickAmounts = [
     { label: '+฿100', amount: 100 },
@@ -20,7 +27,7 @@ export function StepAmount({ lang, initial = '', onNext }: Props) {
   ]
 
   const handleQuickAmount = (amount: number, index: number) => {
-    setValue((v) => String((Number(v) || 0) + amount))
+    update(String((Number(value) || 0) + amount))
     setActiveQuickBtn(index)
     setTimeout(() => setActiveQuickBtn(null), 100)
   }
@@ -67,7 +74,7 @@ export function StepAmount({ lang, initial = '', onNext }: Props) {
           inputMode="decimal"
           autoFocus
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => update(e.target.value)}
           placeholder="0"
           style={{
             flex: 1,
@@ -134,7 +141,7 @@ export function StepAmount({ lang, initial = '', onNext }: Props) {
         <button
           className="tj-btn-ghost"
           style={{ width: '100%' }}
-          onClick={() => setValue('')}
+          onClick={() => update('')}
         >
           {t('clear', lang)}
         </button>

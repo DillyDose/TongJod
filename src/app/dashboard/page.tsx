@@ -114,7 +114,7 @@ export default function DashboardPage() {
   const ready = userId && !loading
 
   return (
-    <AppShell>
+    <AppShell nav={<BottomNav lang={lang} />}>
       {/* Scrollable content */}
       <div
         className="scroll-hidden"
@@ -286,8 +286,6 @@ export default function DashboardPage() {
           onClose={() => setDeletedTx(null)}
         />
       )}
-
-      <BottomNav lang={lang} />
     </AppShell>
   )
 }

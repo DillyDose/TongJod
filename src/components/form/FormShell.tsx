@@ -1,5 +1,7 @@
 'use client'
+import { useRef } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import { detectSwipe } from '@/lib/gestures'
 
 interface Props {
   step: number
@@ -7,9 +9,41 @@ interface Props {
   onBack: () => void
   children: React.ReactNode
   animDir: 'forward' | 'back'
+  /** Swipe left (next step). Omit to disable. */
+  onSwipeForward?: () => void
+  /** Swipe right (previous step). Omit to disable. */
+  onSwipeBack?: () => void
 }
 
-export function FormShell({ step, totalSteps, onBack, children, animDir }: Props) {
+export function FormShell({
+  step,
+  totalSteps,
+  onBack,
+  children,
+  animDir,
+  onSwipeForward,
+  onSwipeBack,
+}: Props) {
+  const touchStart = useRef<{ x: number; y: number; t: number } | null>(null)
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0]
+    touchStart.current = { x: t.clientX, y: t.clientY, t: Date.now() }
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start) return
+    const t = e.changedTouches[0]
+    const dir = detectSwipe(
+      t.clientX - start.x,
+      t.clientY - start.y,
+      Date.now() - start.t,
+    )
+    if (dir === 'left') onSwipeForward?.()
+    else if (dir === 'right') onSwipeBack?.()
+  }
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -56,6 +90,8 @@ export function FormShell({ step, totalSteps, onBack, children, animDir }: Props
       {/* Animated step content — scrolls if it doesn't fit, centered otherwise */}
       <div
         className="scroll-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
           flex: 1,
           minHeight: 0,

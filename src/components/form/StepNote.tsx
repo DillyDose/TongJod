@@ -7,10 +7,17 @@ interface Props {
   initial?: string
   onNext: (note: string) => void
   onSkip: () => void
+  /** Mirrors the value to the parent as the user types (for swipe-forward) */
+  onChange?: (note: string) => void
 }
 
-export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
+export function StepNote({ lang, initial = '', onNext, onSkip, onChange }: Props) {
   const [value, setValue] = useState(initial)
+
+  function update(v: string) {
+    setValue(v)
+    onChange?.(v)
+  }
 
   return (
     <div>
@@ -42,7 +49,7 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
         type="text"
         autoFocus
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => update(e.target.value)}
         placeholder={t('notePlaceholder', lang)}
         className="tj-input"
         style={{

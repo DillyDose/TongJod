@@ -188,11 +188,5 @@ body {
 .anim-in-l  { animation: slideInL 280ms ease-out both; }
 .anim-sheet { animation: sheetUp  300ms ease-out both; }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-}
+/* Animations are core to the app's feel, so they play even when the OS
+   reports prefers-reduced-motion (e.g. Windows "Animation effects" off). */

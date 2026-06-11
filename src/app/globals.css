@@ -58,6 +58,14 @@
 html,
 body {
   height: 100%;
+  overscroll-behavior: none;
+}
+
+/* App frame — exactly one viewport tall so inner areas scroll and the
+   bottom nav stays frozen; dvh tracks mobile browser chrome */
+.phone-frame {
+  height: 100vh;
+  height: 100dvh;
 }
 
 body {

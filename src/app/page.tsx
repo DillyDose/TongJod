@@ -12,10 +12,10 @@ export default function LoginPage() {
 
   return (
     <main
+      className="phone-frame"
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '100vh',
         maxWidth: 480,
         margin: '0 auto',
         background: 'linear-gradient(to bottom, #58CC02, #58A700)',

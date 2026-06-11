@@ -34,18 +34,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         style={{
           position: 'relative',
           zIndex: 2,
-          minHeight: '100vh',
           display: 'flex',
           alignItems: 'stretch',
           justifyContent: 'center',
         }}
       >
         <div
+          className="phone-frame"
           style={{
             position: 'relative',
             width: '100%',
             maxWidth: 480,
-            minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
             background: 'var(--bg-base)',
@@ -69,6 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               position: 'relative',
               zIndex: 1,
               flex: 1,
+              minHeight: 0,
               display: 'flex',
               flexDirection: 'column',
             }}

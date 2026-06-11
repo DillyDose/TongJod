@@ -125,7 +125,7 @@ export default function BudgetPage() {
 
       <div
         className="scroll-hidden"
-        style={{ flex: 1, padding: '8px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}
+        style={{ flex: 1, minHeight: 0, padding: '8px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}
       >
         {/* Expense budgets */}
         <div className="tj-card">

@@ -20,6 +20,8 @@ export function BottomNav({ lang }: { lang: Lang }) {
     <div
       style={{
         height: 80,
+        boxSizing: 'content-box',
+        paddingBottom: 'env(safe-area-inset-bottom)',
         flexShrink: 0,
         background: 'var(--surface)',
         boxShadow: '0 -4px 0 0 #E5E5E5',

@@ -53,19 +53,29 @@ export function FormShell({ step, totalSteps, onBack, children, animDir }: Props
         <div style={{ width: 30 }} />
       </div>
 
-      {/* Animated step content */}
+      {/* Animated step content — scrolls if it doesn't fit, centered otherwise */}
       <div
-        key={step}
-        className={animDir === 'forward' ? 'anim-in-r' : 'anim-in-l'}
+        className="scroll-hidden"
         style={{
           flex: 1,
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '0 16px 32px',
+          padding: '0 16px',
         }}
       >
-        {children}
+        <div
+          key={step}
+          className={animDir === 'forward' ? 'anim-in-r' : 'anim-in-l'}
+          style={{
+            margin: 'auto 0',
+            padding: '8px 0 32px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   )

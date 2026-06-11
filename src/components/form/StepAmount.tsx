@@ -71,6 +71,10 @@ export function StepAmount({ lang, initial = '', onNext }: Props) {
           placeholder="0"
           style={{
             flex: 1,
+            // flex items refuse to shrink below their intrinsic width;
+            // a 40px number input is ~400px wide and overflows the phone
+            minWidth: 0,
+            width: '100%',
             background: 'transparent',
             border: 'none',
             outline: 'none',

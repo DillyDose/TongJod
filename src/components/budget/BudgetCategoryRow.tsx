@@ -105,7 +105,9 @@ export function BudgetCategoryRow({
                 border: 'none',
                 background: 'transparent',
                 fontFamily: 'var(--font-display)',
-                fontSize: 14,
+                // 16px minimum — smaller inputs make iOS Safari zoom the
+                // page on focus, leaving it at a different scale
+                fontSize: 16,
                 fontWeight: 600,
                 color: 'var(--text-primary)',
                 outline: 'none',

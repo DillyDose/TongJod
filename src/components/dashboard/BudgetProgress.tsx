@@ -1,6 +1,7 @@
 'use client'
 import { useTheme } from '@/components/ThemeProvider'
 import { fmt } from '@/lib/theme'
+import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/types'
 
 const STATUS_EMOJI: Record<string, string> = {
@@ -10,6 +11,7 @@ const STATUS_EMOJI: Record<string, string> = {
   default:   '💰',
 }
 
+// Status labels stay Thai — they are the personality of the app
 const STATUS_LABEL: Record<string, string> = {
   excellent: 'ยอดเยี่ยม!',
   onTrack:   'อยู่ในงบ!',
@@ -30,9 +32,16 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
 
   const remainingAmount = totalBudget - totalExpense
   const hasNoBudget = totalBudget === 0
+  const isOver = !hasNoBudget && remainingAmount < 0
 
   const emoji = STATUS_EMOJI[statusKey] ?? '💰'
   const label = STATUS_LABEL[statusKey] ?? ''
+
+  const pillText = hasNoBudget
+    ? t('noBudgetSet', lang)
+    : isOver
+      ? t('overBy', lang, { n: fmt(-remainingAmount) })
+      : `฿${fmt(remainingAmount)}`
 
   return (
     <div
@@ -79,7 +88,7 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
           marginBottom: 12,
         }}
       >
-        {/* Left: ใช้งบไปแล้ว + big % */}
+        {/* Left: budget used + big % */}
         <div>
           <div
             style={{
@@ -89,7 +98,7 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
               marginBottom: 2,
             }}
           >
-            ใช้งบไปแล้ว
+            {t('usedBudget', lang)}
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
             <span
@@ -116,7 +125,7 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
           </div>
         </div>
 
-        {/* Right: เหลือใช้ + white pill */}
+        {/* Right: remaining pill */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <div
             style={{
@@ -125,7 +134,7 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
               color: 'rgba(255,255,255,0.8)',
             }}
           >
-            เหลือใช้
+            {t('leftToSpend', lang)}
           </div>
           <div
             style={{
@@ -139,18 +148,18 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
               whiteSpace: 'nowrap',
             }}
           >
-            {hasNoBudget ? 'ไม่มีงบประมาณ' : `฿${fmt(remainingAmount)}`}
+            {pillText}
           </div>
         </div>
       </div>
 
-      {/* Row 4 — Progress bar */}
+      {/* Row 4 — Progress bar with expected-pace marker */}
       <div
         style={{
+          position: 'relative',
           background: 'rgba(0,0,0,0.2)',
           borderRadius: 9999,
           height: 12,
-          overflow: 'hidden',
         }}
       >
         <div
@@ -162,7 +171,36 @@ export function BudgetProgress({ expectedPct, actualPct, lang, totalBudget, tota
             transition: 'width 600ms ease-out',
           }}
         />
+        {!hasNoBudget && expectedPct > 0 && expectedPct < 100 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: -3,
+              bottom: -3,
+              left: `${expectedPct}%`,
+              width: 3,
+              borderRadius: 2,
+              background: 'rgba(255,255,255,0.95)',
+              boxShadow: '0 0 0 1.5px rgba(0,0,0,0.25)',
+            }}
+          />
+        )}
       </div>
+
+      {/* Row 5 — expected pace caption */}
+      {!hasNoBudget && (
+        <div
+          style={{
+            marginTop: 8,
+            fontFamily: 'var(--font-thai)',
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.8)',
+            textAlign: 'right',
+          }}
+        >
+          {t('expected', lang, { n: expectedPct })}
+        </div>
+      )}
     </div>
   )
 }

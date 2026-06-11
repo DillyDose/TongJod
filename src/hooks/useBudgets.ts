@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { fetchBudgets, upsertBudget } from '@/lib/db'
-import type { Budget } from '@/lib/types'
+import type { Budget, Category } from '@/lib/types'
 
-export function useBudgets(userId: string | null) {
+export function useBudgets(userId: string | null, categories?: Category[]) {
   const [budgets, setBudgets] = useState<Budget[]>([])
 
   useEffect(() => {
@@ -32,7 +32,16 @@ export function useBudgets(userId: string | null) {
     })
   }
 
-  const totalBudget = budgets.reduce((s, b) => s + b.amount, 0)
+  // Only count budgets whose category is still active (not soft-deleted),
+  // otherwise deleted categories keep inflating the total forever
+  const totalBudget = useMemo(() => {
+    const active = categories
+      ? new Set(categories.filter((c) => c.type === 'expense').map((c) => c.id))
+      : null
+    return budgets
+      .filter((b) => !active || active.has(b.category_id))
+      .reduce((s, b) => s + b.amount, 0)
+  }, [budgets, categories])
 
   return { budgets, setBudget, totalBudget }
 }

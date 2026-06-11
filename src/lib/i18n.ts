@@ -42,6 +42,43 @@ const STR: Record<string, Entry> = {
   fNote:           { th: 'โน้ต',                               en: 'Note' },
   fDate:           { th: 'วันที่',                              en: 'Date' },
   noNote:          { th: '—',                                  en: '—' },
+  // Form steps
+  chooseType:      { th: 'เลือกประเภท',                        en: 'Choose a type' },
+  typeSubtitle:    { th: 'รายรับหรือรายจ่าย?',                 en: 'Income or expense?' },
+  enterAmount:     { th: 'ใส่จำนวนเงิน',                       en: 'Enter the amount' },
+  clear:           { th: 'ล้างค่า',                            en: 'Clear' },
+  chooseCategory:  { th: 'เลือกหมวดหมู่',                      en: 'Choose a category' },
+  expenseQ:        { th: 'รายจ่ายวันนี้เป็นอะไร?',             en: 'What did you spend on?' },
+  incomeQ:         { th: 'รับเงินจากที่ไหน?',                  en: 'Where did it come from?' },
+  addNote:         { th: 'เพิ่มหมายเหตุ',                      en: 'Add a note' },
+  noteHint:        { th: 'ใส่รายละเอียดเพิ่มเติม (ถ้ามี)',      en: 'Add extra details (optional)' },
+  chooseDate:      { th: 'เลือกวันที่',                         en: 'Choose a date' },
+  dateHint:        { th: 'เลือกวันที่บันทึกรายการ',             en: 'Pick the date for this entry' },
+  yesterday:       { th: 'เมื่อวาน',                            en: 'Yesterday' },
+  confirmTitle:    { th: 'ยืนยันรายการ',                       en: 'Confirm entry' },
+  saving:          { th: 'กำลังบันทึก...',                     en: 'Saving...' },
+  saveFailed:      { th: 'บันทึกไม่สำเร็จ ลองอีกครั้งนะ',       en: 'Save failed — please try again' },
+  savedTitle:      { th: 'บันทึกสำเร็จ!',                      en: 'Saved!' },
+  savedSub:        { th: 'รายการของคุณถูกบันทึกเรียบร้อยแล้ว',   en: 'Your entry has been saved' },
+  goHome:          { th: 'กลับไปหน้าหลัก',                     en: 'Back to home' },
+  addAnother:      { th: 'บันทึกอีกรายการ',                    en: 'Add another entry' },
+  // Dashboard
+  balance:         { th: 'คงเหลือเดือนนี้',                     en: 'Balance this month' },
+  recent:          { th: 'รายการล่าสุด',                        en: 'Recent entries' },
+  noRecent:        { th: 'ยังไม่มีรายการเดือนนี้',              en: 'No entries this month' },
+  usedBudget:      { th: 'ใช้งบไปแล้ว',                        en: 'Budget used' },
+  leftToSpend:     { th: 'เหลือใช้',                            en: 'Left to spend' },
+  overBy:          { th: 'เกินงบ ฿{n}',                        en: 'Over by ฿{n}' },
+  noBudgetSet:     { th: 'ไม่มีงบประมาณ',                      en: 'No budget set' },
+  viewAll:         { th: 'ดูทั้งหมด',                           en: 'View all' },
+  logout:          { th: 'ออกจากระบบ',                         en: 'Log out' },
+  // Budget page
+  totalThisMonth:  { th: 'งบทั้งหมดเดือนนี้',                   en: 'Total budget this month' },
+  spent:           { th: 'ใช้ไป',                              en: 'Spent' },
+  // Undo snackbar
+  undo:            { th: 'เลิกทำ',                              en: 'Undo' },
+  categoryDeleted: { th: 'ลบหมวดหมู่แล้ว',                     en: 'Category deleted' },
+  entryDeleted:    { th: 'ลบรายการแล้ว',                       en: 'Entry deleted' },
 }
 
 export function t(key: string, lang: Lang, vars?: Record<string, string | number>): string {

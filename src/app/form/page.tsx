@@ -13,9 +13,15 @@ import { StepDate } from '@/components/form/StepDate'
 import { StepConfirm } from '@/components/form/StepConfirm'
 import { StepSuccess } from '@/components/form/StepSuccess'
 import { useCategories } from '@/hooks/useCategories'
-import { useTransactions } from '@/hooks/useTransactions'
 import { useLang } from '@/hooks/useLang'
 import { t } from '@/lib/i18n'
+import {
+  insertTransaction,
+  updateTransaction,
+  fetchLatestTransaction,
+  fetchTransactionById,
+} from '@/lib/db'
+import type { Transaction } from '@/lib/types'
 
 interface Draft {
   type?: 'income' | 'expense'
@@ -31,19 +37,18 @@ export default function FormPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [lang] = useLang()
-  const [step, setStep] = useState(1)
+  // Expense is by far the most common entry, so the form starts on the
+  // amount step with type preset — step 1 (type) is reachable via back
+  const [step, setStep] = useState(2)
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
-  const [draft, setDraft] = useState<Draft>({})
+  const [draft, setDraft] = useState<Draft>({ type: 'expense' })
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+  const [latestTx, setLatestTx] = useState<Transaction | null>(null)
 
-  const now = new Date()
   const { categories } = useCategories(userId)
-  const { transactions, addTransaction, editTransaction } = useTransactions(
-    userId,
-    now.getFullYear(),
-    now.getMonth() + 1,
-  )
 
   useEffect(() => {
     void (async () => {
@@ -53,47 +58,85 @@ export default function FormPage() {
     })()
   }, [router])
 
+  useEffect(() => {
+    if (!userId) return
+    fetchLatestTransaction(userId).then(setLatestTx).catch(() => {})
+  }, [userId])
+
+  // Opened from the dashboard history list: /form?edit=<id>
+  useEffect(() => {
+    if (!userId) return
+    const editParam = new URLSearchParams(window.location.search).get('edit')
+    if (!editParam) return
+    fetchTransactionById(editParam)
+      .then((tx) => {
+        if (!tx || tx.user_id !== userId) return
+        prefillFrom(tx)
+      })
+      .catch(() => {})
+  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function advance() { setAnimDir('forward'); setStep((s) => s + 1) }
   function goBack()  { setAnimDir('back');    setStep((s) => s - 1) }
 
-  function prefillLast() {
-    const sorted = [...transactions].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    )
-    const last = sorted[0]
-    if (!last) return
-    setEditId(last.id)
+  function prefillFrom(tx: Transaction) {
+    setEditId(tx.id)
     setDraft({
-      type: last.type,
-      amount: String(last.amount),
-      categoryId: last.category_id,
-      note: last.note ?? '',
-      date: last.date,
+      type: tx.type,
+      amount: String(tx.amount),
+      categoryId: tx.category_id,
+      note: tx.note ?? '',
+      date: tx.date,
     })
     setAnimDir('forward')
-    setStep(1)
+    setStep(6) // jump straight to confirm; "แก้ไข" walks the steps
   }
 
   async function handleSave() {
+    if (saving) return
     if (!draft.type || !draft.amount || !draft.categoryId || !draft.date || !userId) return
+    const note = draft.note?.trim()
     const tx = {
       user_id: userId,
       type: draft.type,
       amount: Number(draft.amount),
       category_id: draft.categoryId,
-      note: draft.note ?? null,
+      note: note ? note : null,
       date: draft.date,
     }
-    if (editId) {
-      await editTransaction(editId, tx)
-    } else {
-      await addTransaction(tx)
+    setSaving(true)
+    setSaveError(false)
+    try {
+      if (editId) {
+        await updateTransaction(editId, tx)
+      } else {
+        const created = await insertTransaction(tx)
+        setLatestTx(created)
+      }
+      setSaved(true)
+    } catch {
+      setSaveError(true)
+    } finally {
+      setSaving(false)
     }
-    setSaved(true)
+  }
+
+  function handleAddAnother() {
+    window.history.replaceState(null, '', '/form')
+    setDraft({ type: 'expense' })
+    setEditId(null)
+    setSaved(false)
+    setSaveError(false)
+    setAnimDir('forward')
+    setStep(2)
   }
 
   const isDraftComplete =
     draft.type && draft.amount && draft.categoryId && draft.date
+
+  const typeChipColor = draft.type === 'income'
+    ? { bg: '#DCFCE7', text: '#15803D' }
+    : { bg: '#FEE2E2', text: '#DC2626' }
 
   return (
     <AppShell>
@@ -104,13 +147,51 @@ export default function FormPage() {
         animDir={animDir}
       >
         {step === 1 && (
+          <StepType
+            lang={lang}
+            onSelect={(type) => {
+              setDraft((d) => ({
+                ...d,
+                type,
+                // category list depends on type — drop a stale selection
+                categoryId: d.type === type ? d.categoryId : undefined,
+              }))
+              advance()
+            }}
+          />
+        )}
+
+        {step === 2 && (
           <>
-            <StepType
-              onSelect={(type) => { setDraft((d) => ({ ...d, type })); advance() }}
+            {/* Current type chip — tap to change (goes back to step 1) */}
+            <button
+              onClick={() => { setAnimDir('back'); setStep(1) }}
+              style={{
+                alignSelf: 'center',
+                background: typeChipColor.bg,
+                color: typeChipColor.text,
+                border: 'none',
+                borderRadius: 9999,
+                padding: '6px 16px',
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: 'var(--font-thai)',
+                cursor: 'pointer',
+                marginBottom: 16,
+              }}
+            >
+              {draft.type === 'income' ? t('income', lang) : t('expense', lang)} ▾
+            </button>
+
+            <StepAmount
+              lang={lang}
+              initial={draft.amount}
+              onNext={(amount) => { setDraft((d) => ({ ...d, amount })); advance() }}
             />
-            {transactions.length > 0 && (
+
+            {!editId && latestTx && (
               <button
-                onClick={prefillLast}
+                onClick={() => prefillFrom(latestTx)}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -128,14 +209,6 @@ export default function FormPage() {
               </button>
             )}
           </>
-        )}
-
-        {step === 2 && (
-          <StepAmount
-            lang={lang}
-            initial={draft.amount}
-            onNext={(amount) => { setDraft((d) => ({ ...d, amount })); advance() }}
-          />
         )}
 
         {step === 3 && draft.type && (
@@ -159,6 +232,7 @@ export default function FormPage() {
 
         {step === 5 && (
           <StepDate
+            lang={lang}
             initial={draft.date}
             onNext={(date) => { setDraft((d) => ({ ...d, date })); advance() }}
           />
@@ -166,8 +240,11 @@ export default function FormPage() {
 
         {step === 6 && isDraftComplete && (
           <StepConfirm
+            lang={lang}
             draft={draft as Required<Draft>}
             categories={categories}
+            saving={saving}
+            error={saveError}
             onSave={handleSave}
             onEdit={() => { setAnimDir('back'); setStep(1) }}
           />
@@ -176,11 +253,13 @@ export default function FormPage() {
 
       {saved && draft.type && draft.amount && draft.categoryId && (
         <StepSuccess
+          lang={lang}
           amount={draft.amount}
           type={draft.type}
           categoryId={draft.categoryId}
           categories={categories}
           onHome={() => router.push('/dashboard')}
+          onAgain={handleAddAnother}
         />
       )}
 

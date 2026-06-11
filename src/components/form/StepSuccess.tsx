@@ -1,17 +1,20 @@
 'use client'
 import { useTheme } from '@/components/ThemeProvider'
 import { fmt } from '@/lib/theme'
-import type { Category } from '@/lib/types'
+import { t } from '@/lib/i18n'
+import type { Lang, Category } from '@/lib/types'
 
 interface Props {
+  lang: Lang
   amount: string
   type: 'income' | 'expense'
   categoryId: string
   categories: Category[]
   onHome: () => void
+  onAgain: () => void
 }
 
-export function StepSuccess({ amount, type, categoryId, categories, onHome }: Props) {
+export function StepSuccess({ lang, amount, type, categoryId, categories, onHome, onAgain }: Props) {
   const { theme } = useTheme()
   const cat = categories.find((c) => c.id === categoryId)
   const typeColor = type === 'income' ? '#22C55E' : '#EF4444'
@@ -47,14 +50,14 @@ export function StepSuccess({ amount, type, categoryId, categories, onHome }: Pr
           color: 'white',
           marginBottom: 8,
         }}>
-          บันทึกสำเร็จ! 🎉
+          {t('savedTitle', lang)} 🎉
         </h1>
         <p style={{
           fontFamily: 'var(--font-thai)',
           fontSize: 15,
           color: 'rgba(255,255,255,0.80)',
         }}>
-          รายการของคุณถูกบันทึกเรียบร้อยแล้ว
+          {t('savedSub', lang)}
         </p>
       </div>
 
@@ -93,9 +96,9 @@ export function StepSuccess({ amount, type, categoryId, categories, onHome }: Pr
         )}
       </div>
 
-      {/* Home button */}
+      {/* Add another entry */}
       <button
-        onClick={onHome}
+        onClick={onAgain}
         style={{
           width: '100%', maxWidth: 360,
           height: 56, borderRadius: 16,
@@ -121,7 +124,24 @@ export function StepSuccess({ amount, type, categoryId, categories, onHome }: Pr
           e.currentTarget.style.boxShadow = `0 4px 0 0 ${theme.shadow}`
         }}
       >
-        กลับไปหน้าหลัก
+        + {t('addAnother', lang)}
+      </button>
+
+      {/* Home button */}
+      <button
+        onClick={onHome}
+        style={{
+          width: '100%', maxWidth: 360,
+          height: 52, borderRadius: 16,
+          background: 'rgba(255,255,255,0.18)',
+          border: '2px solid rgba(255,255,255,0.55)',
+          cursor: 'pointer',
+          fontFamily: 'var(--font-thai)',
+          fontSize: 15, fontWeight: 700,
+          color: 'white',
+        }}
+      >
+        {t('goHome', lang)}
       </button>
     </div>
   )

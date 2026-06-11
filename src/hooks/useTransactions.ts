@@ -1,6 +1,11 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { fetchTransactions, insertTransaction, updateTransaction } from '@/lib/db'
+import {
+  fetchTransactions,
+  insertTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from '@/lib/db'
 import type { Transaction } from '@/lib/types'
 
 export function useTransactions(userId: string | null, year: number, month: number) {
@@ -20,9 +25,13 @@ export function useTransactions(userId: string | null, year: number, month: numb
 
   useEffect(() => { load() }, [load])
 
-  async function addTransaction(tx: Omit<Transaction, 'id' | 'created_at'>) {
-    const saved = await insertTransaction(tx)
+  async function addTransaction(
+    tx: Omit<Transaction, 'id' | 'created_at'>,
+    opts?: { bumpUsage?: boolean },
+  ): Promise<Transaction> {
+    const saved = await insertTransaction(tx, opts)
     setTransactions((prev) => [saved, ...prev])
+    return saved
   }
 
   async function editTransaction(
@@ -33,5 +42,10 @@ export function useTransactions(userId: string | null, year: number, month: numb
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...tx } : t)))
   }
 
-  return { transactions, loading, addTransaction, editTransaction, reload: load }
+  async function removeTransaction(id: string) {
+    await deleteTransaction(id)
+    setTransactions((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  return { transactions, loading, addTransaction, editTransaction, removeTransaction, reload: load }
 }

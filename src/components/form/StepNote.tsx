@@ -23,7 +23,7 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
           textAlign: 'center',
         }}
       >
-        เพิ่มหมายเหตุ
+        {t('addNote', lang)}
       </h1>
 
       <div
@@ -32,9 +32,10 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
           color: 'var(--text-secondary)',
           textAlign: 'center',
           marginBottom: 28,
+          fontFamily: 'var(--font-thai)',
         }}
       >
-        ใส่รายละเอียดเพิ่มเติม (ถ้ามี)
+        {t('noteHint', lang)}
       </div>
 
       <input
@@ -65,7 +66,7 @@ export function StepNote({ lang, initial = '', onNext, onSkip }: Props) {
       </button>
 
       <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onSkip}>
-        ข้าม
+        {t('skip', lang)}
       </button>
     </div>
   )

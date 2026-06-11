@@ -1,8 +1,12 @@
+import { t } from '@/lib/i18n'
+import type { Lang } from '@/lib/types'
+
 interface Props {
+  lang: Lang
   onSelect: (type: 'income' | 'expense') => void
 }
 
-export function StepType({ onSelect }: Props) {
+export function StepType({ lang, onSelect }: Props) {
   return (
     <div>
       {/* Heading section */}
@@ -15,7 +19,7 @@ export function StepType({ onSelect }: Props) {
           textAlign: 'center',
         }}
       >
-        เลือกประเภท
+        {t('chooseType', lang)}
       </h1>
       <p
         style={{
@@ -23,9 +27,10 @@ export function StepType({ onSelect }: Props) {
           color: 'var(--text-secondary)',
           textAlign: 'center',
           marginBottom: 32,
+          fontFamily: 'var(--font-thai)',
         }}
       >
-        รายรับหรือรายจ่าย?
+        {t('typeSubtitle', lang)}
       </p>
 
       {/* Income and Expense cards */}
@@ -73,7 +78,7 @@ export function StepType({ onSelect }: Props) {
               flexShrink: 0,
             }}
           >
-            ↓
+            ↑
           </div>
           <span
             style={{
@@ -83,7 +88,7 @@ export function StepType({ onSelect }: Props) {
               color: '#15803D',
             }}
           >
-            รายรับ
+            {t('income', lang)}
           </span>
         </button>
 
@@ -130,7 +135,7 @@ export function StepType({ onSelect }: Props) {
               flexShrink: 0,
             }}
           >
-            ↑
+            ↓
           </div>
           <span
             style={{
@@ -140,7 +145,7 @@ export function StepType({ onSelect }: Props) {
               color: '#DC2626',
             }}
           >
-            รายจ่าย
+            {t('expense', lang)}
           </span>
         </button>
       </div>

@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n'
+import { categoryIcon } from '@/lib/icons'
 import type { Lang, Category } from '@/lib/types'
 
 interface Props {
@@ -8,30 +10,7 @@ interface Props {
   onNext: (catId: string) => void
 }
 
-const ICON_MAP: Record<string, string> = {
-  // Expense categories (Thai names)
-  'อาหาร': 'restaurant',
-  'เดินทาง': 'directions_car',
-  'ช็อปปิ้ง': 'shopping_bag',
-  'บันเทิง': 'movie',
-  'สุขภาพ': 'favorite',
-  'ค่าเช่า': 'home',
-  'สาธารณูปโภค': 'bolt',
-  'การศึกษา': 'school',
-  'ดูแลตัวเอง': 'spa',
-  'อื่นๆ': 'more_horiz',
-  // Income categories (Thai names)
-  'เงินเดือน': 'payments',
-  'ฟรีแลนซ์': 'laptop_mac',
-  'ลงทุน': 'trending_up',
-  'ของขวัญ': 'card_giftcard',
-}
-
-function getIcon(name: string): string {
-  return ICON_MAP[name] ?? 'category'
-}
-
-export function StepCategory({ lang: _lang, categories, type, initial, onNext }: Props) {
+export function StepCategory({ lang, categories, type, initial, onNext }: Props) {
   const filtered = categories
     .filter((c) => c.type === type)
     .sort((a, b) => b.usage_count - a.usage_count)
@@ -47,7 +26,7 @@ export function StepCategory({ lang: _lang, categories, type, initial, onNext }:
           marginBottom: 8,
         }}
       >
-        เลือกหมวดหมู่
+        {t('chooseCategory', lang)}
       </h1>
       <p
         style={{
@@ -56,9 +35,10 @@ export function StepCategory({ lang: _lang, categories, type, initial, onNext }:
           textAlign: 'center',
           marginBottom: 24,
           marginTop: 0,
+          fontFamily: 'var(--font-thai)',
         }}
       >
-        {type === 'expense' ? 'รายจ่ายวันนี้เป็นอะไร?' : 'รับเงินจากที่ไหน?'}
+        {type === 'expense' ? t('expenseQ', lang) : t('incomeQ', lang)}
       </p>
 
       <div
@@ -70,7 +50,7 @@ export function StepCategory({ lang: _lang, categories, type, initial, onNext }:
       >
         {filtered.map((cat) => {
           const selected = cat.id === initial
-          const icon = getIcon(cat.name)
+          const icon = categoryIcon(cat.name)
           return (
             <button
               key={cat.id}

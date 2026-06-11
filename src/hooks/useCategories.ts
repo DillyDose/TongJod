@@ -1,6 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { fetchCategories, insertCategory, softDeleteCategory } from '@/lib/db'
+import {
+  fetchCategories,
+  insertCategory,
+  softDeleteCategory,
+  restoreCategory as dbRestoreCategory,
+} from '@/lib/db'
 import type { Category } from '@/lib/types'
 
 export function useCategories(userId: string | null) {
@@ -22,5 +27,12 @@ export function useCategories(userId: string | null) {
     setCategories((prev) => prev.filter((c) => c.id !== id))
   }
 
-  return { categories, addCategory, deleteCategory }
+  async function restoreCategory(cat: Category) {
+    await dbRestoreCategory(cat.id)
+    setCategories((prev) =>
+      prev.some((c) => c.id === cat.id) ? prev : [...prev, cat],
+    )
+  }
+
+  return { categories, addCategory, deleteCategory, restoreCategory }
 }

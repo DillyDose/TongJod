@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/types'
 
 interface Props {
@@ -36,7 +37,7 @@ export function StepAmount({ lang, initial = '', onNext }: Props) {
           margin: 0,
         }}
       >
-        ใส่จำนวนเงิน
+        {t('enterAmount', lang)}
       </h1>
 
       {/* Amount Display Card */}
@@ -124,14 +125,14 @@ export function StepAmount({ lang, initial = '', onNext }: Props) {
           disabled={!value || Number(value) <= 0}
           onClick={() => onNext(value)}
         >
-          ต่อไป →
+          {t('continue', lang)} →
         </button>
         <button
           className="tj-btn-ghost"
           style={{ width: '100%' }}
           onClick={() => setValue('')}
         >
-          ล้างค่า
+          {t('clear', lang)}
         </button>
       </div>
     </div>

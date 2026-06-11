@@ -61,7 +61,7 @@ export function TopCategories({ transactions, categories, lang }: Props) {
             fontFamily: 'var(--font-thai)',
           }}
         >
-          ดูทั้งหมด →
+          {t('viewAll', lang)} →
         </button>
       </div>
 

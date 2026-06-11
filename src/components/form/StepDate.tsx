@@ -1,17 +1,19 @@
 import { useState } from 'react'
+import { t } from '@/lib/i18n'
+import { todayISO, yesterdayISO } from '@/lib/dates'
+import type { Lang } from '@/lib/types'
 
 interface Props {
+  lang: Lang
   initial?: string
   onNext: (date: string) => void
 }
 
-export function StepDate({ initial, onNext }: Props) {
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = (() => {
-    const d = new Date()
-    d.setDate(d.getDate() - 1)
-    return d.toISOString().split('T')[0]
-  })()
+export function StepDate({ lang, initial, onNext }: Props) {
+  // Local-timezone dates — toISOString() is UTC and would shift the date
+  // before 7am in Thailand
+  const today = todayISO()
+  const yesterday = yesterdayISO()
   const [value, setValue] = useState(initial ?? today)
 
   return (
@@ -25,7 +27,7 @@ export function StepDate({ initial, onNext }: Props) {
           textAlign: 'center',
         }}
       >
-        เลือกวันที่
+        {t('chooseDate', lang)}
       </h1>
 
       <p
@@ -37,7 +39,7 @@ export function StepDate({ initial, onNext }: Props) {
           fontFamily: 'var(--font-thai)',
         }}
       >
-        เลือกวันที่บันทึกรายการ
+        {t('dateHint', lang)}
       </p>
 
       <div
@@ -52,6 +54,7 @@ export function StepDate({ initial, onNext }: Props) {
         <input
           type="date"
           value={value}
+          max={today}
           onChange={(e) => setValue(e.target.value)}
           style={{
             width: '100%',
@@ -83,7 +86,7 @@ export function StepDate({ initial, onNext }: Props) {
             cursor: 'pointer',
           }}
         >
-          วันนี้
+          {t('today', lang)}
         </button>
         <button
           onClick={() => setValue(yesterday)}
@@ -100,7 +103,7 @@ export function StepDate({ initial, onNext }: Props) {
             cursor: 'pointer',
           }}
         >
-          เมื่อวาน
+          {t('yesterday', lang)}
         </button>
       </div>
 
@@ -110,7 +113,7 @@ export function StepDate({ initial, onNext }: Props) {
         onClick={() => onNext(value)}
         disabled={!value}
       >
-        ต่อไป →
+        {t('continue', lang)} →
       </button>
     </div>
   )

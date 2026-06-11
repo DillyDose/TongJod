@@ -56,15 +56,49 @@ export async function fetchTransactions(
   return data as Transaction[]
 }
 
+export async function fetchLatestTransaction(userId: string): Promise<Transaction | null> {
+  const sb = getSupabase()
+  const { data, error } = await sb
+    .from('transactions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  return data as Transaction | null
+}
+
+export async function fetchTransactionById(id: string): Promise<Transaction | null> {
+  const sb = getSupabase()
+  const { data, error } = await sb
+    .from('transactions')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw error
+  return data as Transaction | null
+}
+
 export async function insertTransaction(
   tx: Omit<Transaction, 'id' | 'created_at'>,
+  opts?: { bumpUsage?: boolean },
 ): Promise<Transaction> {
   const sb = getSupabase()
   const { data, error } = await sb.from('transactions').insert(tx).select().single()
   if (error) throw error
-  // Increment usage count via DB function (defined in migration)
-  await sb.rpc('increment_usage', { cat_id: tx.category_id })
+  // Increment usage count via DB function (defined in migration);
+  // skipped for undo re-inserts so usage stats aren't double-counted
+  if (opts?.bumpUsage !== false) {
+    await sb.rpc('increment_usage', { cat_id: tx.category_id })
+  }
   return data as Transaction
+}
+
+export async function deleteTransaction(id: string): Promise<void> {
+  const sb = getSupabase()
+  const { error } = await sb.from('transactions').delete().eq('id', id)
+  if (error) throw error
 }
 
 export async function updateTransaction(
@@ -106,6 +140,12 @@ export async function insertCategory(
 export async function softDeleteCategory(id: string): Promise<void> {
   const sb = getSupabase()
   const { error } = await sb.from('categories').update({ is_deleted: true }).eq('id', id)
+  if (error) throw error
+}
+
+export async function restoreCategory(id: string): Promise<void> {
+  const sb = getSupabase()
+  const { error } = await sb.from('categories').update({ is_deleted: false }).eq('id', id)
   if (error) throw error
 }
 

@@ -1,35 +1,36 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, Globe } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase/client'
 import { AppShell } from '@/components/AppShell'
 import { BottomNav } from '@/components/BottomNav'
+import { Snackbar } from '@/components/Snackbar'
 import { BudgetCategoryRow } from '@/components/budget/BudgetCategoryRow'
 import { AddCategorySheet } from '@/components/budget/AddCategorySheet'
 import { useCategories } from '@/hooks/useCategories'
 import { useBudgets } from '@/hooks/useBudgets'
+import { useTransactions } from '@/hooks/useTransactions'
 import { useLang } from '@/hooks/useLang'
 import { t } from '@/lib/i18n'
 import { fmt } from '@/lib/theme'
+import { categoryIcon } from '@/lib/icons'
 import { useTheme } from '@/components/ThemeProvider'
-
-const ICON_MAP: Record<string, string> = {
-  'อาหาร': 'restaurant', 'เดินทาง': 'directions_car', 'ช็อปปิ้ง': 'shopping_bag',
-  'บันเทิง': 'movie', 'สุขภาพ': 'favorite', 'ค่าเช่า': 'home',
-  'สาธารณูปโภค': 'bolt', 'การศึกษา': 'school', 'ดูแลตัวเอง': 'spa', 'อื่นๆ': 'more_horiz',
-  'เงินเดือน': 'payments', 'ฟรีแลนซ์': 'laptop_mac', 'ลงทุน': 'trending_up', 'ของขวัญ': 'card_giftcard',
-}
+import type { Category } from '@/lib/types'
 
 export default function BudgetPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
-  const [lang] = useLang()
+  const [lang, setLang] = useLang()
   const [sheet, setSheet] = useState<'income' | 'expense' | null>(null)
+  const [deletedCat, setDeletedCat] = useState<Category | null>(null)
   const { theme } = useTheme()
 
-  const { categories, addCategory, deleteCategory } = useCategories(userId)
-  const { budgets, setBudget, totalBudget } = useBudgets(userId)
+  const { categories, addCategory, deleteCategory, restoreCategory } = useCategories(userId)
+  const { budgets, setBudget, totalBudget } = useBudgets(userId, categories)
+
+  const now = new Date()
+  const { transactions } = useTransactions(userId, now.getFullYear(), now.getMonth() + 1)
 
   useEffect(() => {
     void (async () => {
@@ -42,6 +43,19 @@ export default function BudgetPage() {
   const expenseCategories = categories.filter((c) => c.type === 'expense')
   const incomeCategories  = categories.filter((c) => c.type === 'income')
 
+  // Spent per category for the current month (for the per-row progress bars)
+  const spentByCategory = new Map<string, number>()
+  for (const tx of transactions) {
+    if (tx.type !== 'expense') continue
+    spentByCategory.set(tx.category_id, (spentByCategory.get(tx.category_id) ?? 0) + tx.amount)
+  }
+
+  async function handleDeleteCategory(id: string) {
+    const cat = categories.find((c) => c.id === id)
+    await deleteCategory(id)
+    if (cat) setDeletedCat(cat)
+  }
+
   return (
     <AppShell>
       {/* Header */}
@@ -50,6 +64,7 @@ export default function BudgetPage() {
           height: 56,
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '0 16px',
           flexShrink: 0,
         }}
@@ -61,8 +76,27 @@ export default function BudgetPage() {
             fontSize: 18,
           }}
         >
-          งบประมาณ
+          {t('navBudget', lang)}
         </h2>
+
+        <button
+          onClick={() => setLang(lang === 'th' ? 'en' : 'th')}
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--r-full)',
+            padding: '4px 12px',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+          }}
+        >
+          <Globe size={13} />
+          {lang === 'th' ? 'TH · EN' : 'EN · TH'}
+        </button>
       </div>
 
       {/* Total budget display */}
@@ -85,7 +119,7 @@ export default function BudgetPage() {
             marginTop: 2,
           }}
         >
-          งบทั้งหมดเดือนนี้
+          {t('totalThisMonth', lang)}
         </div>
       </div>
 
@@ -112,11 +146,12 @@ export default function BudgetPage() {
               key={cat.id}
               category={cat}
               budget={budgets.find((b) => b.category_id === cat.id)}
+              spent={spentByCategory.get(cat.id) ?? 0}
               lang={lang}
               onBudgetChange={setBudget}
-              onDelete={deleteCategory}
+              onDelete={handleDeleteCategory}
               showAmount
-              icon={ICON_MAP[cat.name] ?? 'category'}
+              icon={categoryIcon(cat.name)}
             />
           ))}
 
@@ -178,9 +213,9 @@ export default function BudgetPage() {
               category={cat}
               lang={lang}
               onBudgetChange={() => {}}
-              onDelete={deleteCategory}
+              onDelete={handleDeleteCategory}
               showAmount={false}
-              icon={ICON_MAP[cat.name] ?? 'category'}
+              icon={categoryIcon(cat.name)}
             />
           ))}
 
@@ -208,6 +243,15 @@ export default function BudgetPage() {
           type={sheet}
           onAdd={(name) => addCategory(name, sheet)}
           onClose={() => setSheet(null)}
+        />
+      )}
+
+      {deletedCat && (
+        <Snackbar
+          message={`${t('categoryDeleted', lang)} · ${deletedCat.name}`}
+          actionLabel={t('undo', lang)}
+          onAction={() => restoreCategory(deletedCat)}
+          onClose={() => setDeletedCat(null)}
         />
       )}
 

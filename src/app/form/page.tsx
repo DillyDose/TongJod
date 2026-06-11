@@ -122,27 +122,6 @@ export default function FormPage() {
     }
   }
 
-  // Swipe gating happens here (not inside the handlers) so FormShell knows
-  // mid-drag whether a direction is live — disabled directions rubber-band.
-  // Confirm (step 6) must be saved with an explicit tap.
-  const canSwipeForward =
-    !saved && !saving && step < 6 &&
-    (step !== 1 || !!draft.type) &&
-    (step !== 2 || Number(draft.amount) > 0) &&
-    (step !== 3 || !!draft.categoryId)
-  const canSwipeBack = !saved && !saving && step > 1
-
-  // Swipe left = same as pressing Continue
-  function handleSwipeForward() {
-    if (step === 4 && draft.note === undefined) {
-      setDraft((d) => ({ ...d, note: '' })) // swipe past note = skip
-    }
-    if (step === 5 && !draft.date) {
-      setDraft((d) => ({ ...d, date: todayISO() })) // untouched picker shows today
-    }
-    advance()
-  }
-
   function handleAddAnother() {
     window.history.replaceState(null, '', '/form')
     setDraft({ type: 'expense' })
@@ -167,8 +146,7 @@ export default function FormPage() {
         totalSteps={TOTAL_STEPS}
         onBack={goBack}
         animDir={animDir}
-        onSwipeForward={canSwipeForward ? handleSwipeForward : undefined}
-        onSwipeBack={canSwipeBack ? goBack : undefined}
+
       >
         {step === 1 && (
           <StepType

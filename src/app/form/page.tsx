@@ -122,13 +122,18 @@ export default function FormPage() {
     }
   }
 
-  // Swipe left = same as pressing Continue; only when the current step
-  // has a valid value. Confirm (step 6) must be saved with an explicit tap.
+  // Swipe gating happens here (not inside the handlers) so FormShell knows
+  // mid-drag whether a direction is live — disabled directions rubber-band.
+  // Confirm (step 6) must be saved with an explicit tap.
+  const canSwipeForward =
+    !saved && !saving && step < 6 &&
+    (step !== 1 || !!draft.type) &&
+    (step !== 2 || Number(draft.amount) > 0) &&
+    (step !== 3 || !!draft.categoryId)
+  const canSwipeBack = !saved && !saving && step > 1
+
+  // Swipe left = same as pressing Continue
   function handleSwipeForward() {
-    if (saved || saving || step >= 6) return
-    if (step === 1 && !draft.type) return
-    if (step === 2 && !(Number(draft.amount) > 0)) return
-    if (step === 3 && !draft.categoryId) return
     if (step === 4 && draft.note === undefined) {
       setDraft((d) => ({ ...d, note: '' })) // swipe past note = skip
     }
@@ -136,12 +141,6 @@ export default function FormPage() {
       setDraft((d) => ({ ...d, date: todayISO() })) // untouched picker shows today
     }
     advance()
-  }
-
-  // Swipe right = same as the back arrow
-  function handleSwipeBack() {
-    if (saved || saving || step <= 1) return
-    goBack()
   }
 
   function handleAddAnother() {
@@ -168,8 +167,8 @@ export default function FormPage() {
         totalSteps={TOTAL_STEPS}
         onBack={goBack}
         animDir={animDir}
-        onSwipeForward={handleSwipeForward}
-        onSwipeBack={handleSwipeBack}
+        onSwipeForward={canSwipeForward ? handleSwipeForward : undefined}
+        onSwipeBack={canSwipeBack ? goBack : undefined}
       >
         {step === 1 && (
           <StepType

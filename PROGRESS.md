@@ -25,6 +25,13 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-06-11 — Tinder-style swipe on form steps (on `dev`, not yet released)**
+- Step now follows the finger in real time (translate + slight rotate + fade), flies off on commit, springs back on cancel — replaces the old "detect at finger-lift only" swipe that gave no feedback and ignored slow drags
+- Commit = drag past 90px OR fast flick (≥0.5 px/ms after ≥30px); fast yank back toward start always cancels
+- Disabled directions (invalid step, confirm step) rubber-band at 1/3 instead of doing nothing silently — validity gates moved from the handlers into `canSwipeForward`/`canSwipeBack` in form/page.tsx so FormShell knows mid-drag
+- Switched touch events → pointer events: swipe now also works with a mouse (desktop testing) — capture starts only after horizontal axis-lock so taps still click; one post-drag ghost click is swallowed
+- `lib/gestures.ts` rewritten as pure helpers (`lockAxis`, `dragOffset`, `shouldCommitSwipe`) with unit tests; `detectSwipe` removed
+
 **2026-06-11 — Seamless navigation (on `dev`, not yet released)**
 - Direction-aware page slide transitions between tabs; bottom nav stays stationary
 - Swipe left/right on form steps = continue/back (validated per step; confirm step still needs a tap)

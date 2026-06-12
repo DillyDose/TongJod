@@ -25,6 +25,25 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-06-12 — Form UX batch: 5-step form, calculator input, quick templates, time-aware categories, PWA manifest (on `dev`, not yet released)**
+- **Note + date merged into one Details step** (6 → 5 steps): both fields are optional/low-friction,
+  so they share a screen — note input, date picker, Today/Yesterday chips, never-disabled Continue
+- **Calculator amount input**: the amount field accepts `120+45+30` with a live `= ฿195` line;
+  `+`/`−` chips under the field because the iOS decimal keypad has no operator keys; quick-amount
+  buttons now build a visible expression instead of silently summing; only the evaluated total
+  ever reaches the draft/DB (new pure `lib/calc.ts`)
+- **Quick-add template chips** on the amount step: top 3 recurring (category, amount) pairs from
+  the last 200 transactions (≥2 occurrences), one tap → prefilled Confirm with today's date —
+  typical repeat entry is now 2 taps; hidden in edit mode and for income (new `lib/suggest.ts` +
+  `fetchRecentTransactions` in `lib/db`)
+- **Time-of-day aware category ordering**: the category grid is reordered by usage in the current
+  time bucket (morning/midday/evening/night), falling back to plain `usage_count` when the bucket
+  has <3 transactions — new users see no change
+- **Installable PWA**: `src/app/manifest.ts` (standalone, opens on `/form`), theme color, placeholder
+  ฿ icons via `scripts/generate-icons.mjs` (replace artwork + re-run anytime). Deliberately NO
+  service worker — installability without cache-invalidation complexity
+- New tests: `lib/calc`, `lib/suggest`, `StepDetails`, `StepAmount`, `form-quick-template` (63 total)
+
 **2026-06-12 — Bug sweep #2: edit-mode data-overwrite + stale-data fixes (on `dev`, not yet released)**
 - **Edit mode now follows the URL** (`useSearchParams`): tapping the "+" tab while editing used to keep
   the edit state silently — saving a "new" entry overwrote the old transaction. Now `/form` without
@@ -77,7 +96,8 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 - [ ] User testing of the navigation features on the `dev` preview → then release to `master`
 - [ ] Separate **dev database** (second Supabase project) so local/preview testing stops touching production data
-- [ ] PWA / installable app (manifest + icons + offline shell) — deferred until "real app" phase
+- [ ] Service worker / offline shell (installable manifest shipped 2026-06-12; offline is a separate phase)
+- [ ] Real app icon artwork (current ฿ icon is a generated placeholder — see `scripts/generate-icons.mjs`)
 - [ ] Daily logging reminder or streak counter (fits the Duolingo personality)
 - [ ] CSV export of a month
 - [ ] Supabase redirect allow-list for preview URLs (Google login on `*-patsapol-s-projects.vercel.app`)
@@ -93,6 +113,12 @@ color theme shifts green/orange/red based on how the user's spending compares to
 | Soft-delete categories; budgets of deleted categories excluded from totals | Preserves history in charts while keeping the math honest |
 | `dev` → preview → `master` workflow | Owner wants to test features before they hit production |
 | Form edit mode is driven by the `?edit=` URL param (single source of truth) | Component state alone couldn't tell "+ tab" apart from edit mode — saving a "new" entry overwrote the edited transaction. Every prefill writes the param; no param = fresh entry |
+| Note + date merged into one Details step (5 steps) | Both optional/low-friction; one screen fewer per entry |
+| Amount input supports `+`/`-` only (no `*` `/`) | Receipt-summing use case; left-to-right eval, no precedence rules; operator chips because the iOS decimal pad has no `+` |
+| Template chips jump to Confirm, never instant-save | A mis-tap must not write to the DB; one extra tap is the safety margin |
+| Template = (category, amount) pair seen ≥2× in last 200 tx, top 3 by count then recency | One bounded `fetchRecentTransactions` query, no month-window stitching |
+| Time buckets 5–10 / 11–14 / 15–20 / 21–4 with `usage_count` fallback under 3 bucket-tx | Avoids garbage ordering on thin data; empty history = unchanged behavior |
+| PWA = manifest + icons only, no service worker | Installability without cache-invalidation complexity; offline shell is a separate later phase |
 
 ## Conventions
 

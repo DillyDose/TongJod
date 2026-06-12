@@ -25,6 +25,26 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-06-12 — Bug sweep #2: edit-mode data-overwrite + stale-data fixes (on `dev`, not yet released)**
+- **Edit mode now follows the URL** (`useSearchParams`): tapping the "+" tab while editing used to keep
+  the edit state silently — saving a "new" entry overwrote the old transaction. Now `/form` without
+  `?edit` always resets to a fresh entry; "edit last entry" also writes `?edit=<id>` into the URL so
+  every entry point behaves the same
+- `latestTx` is updated after an edit-save — previously "แก้ไขรายการล่าสุด" prefilled pre-edit values
+  and could revert the edit
+- Month-switch race fixed in `useTransactions`: latest-request-wins guard (fast prev/next month could
+  show the wrong month's data)
+- Undo-delete restores into the DB but only into the visible list when the viewed month matches the
+  entry's month (new pure helper `isoInMonth` in `lib/dates`)
+- Snackbar gets `key={deleted.id}` so the 5s auto-close timer restarts per deleted item
+  (consecutive deletes used to close the second snackbar almost immediately)
+- i18n: `บาท` in SummaryCards and the TopCategories empty state now go through `t()` (EN mode showed Thai)
+- Update payload no longer includes `user_id`; removed dead `getOrCreateProfile`/`seedCategories`
+  from `lib/db` (seeding lives in `auth/callback/route.ts`); CLAUDE.md drift fixed
+  (`gestures.ts` reference removed, soft-delete is `is_deleted` not `deleted_at`)
+- New tests: `tests/hooks/useTransactions.test.ts`, `tests/app/form-edit-mode.test.tsx`,
+  `tests/components/i18n-leaks.test.tsx` — first React Testing Library page/hook tests in the repo
+
 **2026-06-11 — Tinder-style swipe on form steps (on `dev`, not yet released)**
 - Step now follows the finger in real time (translate + slight rotate + fade), flies off on commit, springs back on cancel — replaces the old "detect at finger-lift only" swipe that gave no feedback and ignored slow drags
 - Commit = drag past 90px OR fast flick (≥0.5 px/ms after ≥30px); fast yank back toward start always cancels
@@ -72,9 +92,10 @@ color theme shifts green/orange/red based on how the user's spending compares to
 | Status messages stay **Thai-only** in EN mode | They are the app's personality (per original spec) |
 | Soft-delete categories; budgets of deleted categories excluded from totals | Preserves history in charts while keeping the math honest |
 | `dev` → preview → `master` workflow | Owner wants to test features before they hit production |
+| Form edit mode is driven by the `?edit=` URL param (single source of truth) | Component state alone couldn't tell "+ tab" apart from edit mode — saving a "new" entry overwrote the edited transaction. Every prefill writes the param; no param = fresh entry |
 
 ## Conventions
 
 - Commit style: `fix:` / `feat:` / `chore:` prefixes, lowercase
-- Tests live in `tests/` (vitest); pure logic gets unit tests (`lib/dates`, `lib/gestures`, `lib/theme`, `lib/i18n`)
+- Tests live in `tests/` (vitest); pure logic gets unit tests (`lib/dates`, `lib/theme`, `lib/i18n`); hook/page behavior tests use React Testing Library (`tests/hooks/`, `tests/app/`, `tests/components/`)
 - All UI strings go through `t()` in [src/lib/i18n.ts](src/lib/i18n.ts); category icons through [src/lib/icons.ts](src/lib/icons.ts); dates through [src/lib/dates.ts](src/lib/dates.ts) (local timezone, never `toISOString()`)

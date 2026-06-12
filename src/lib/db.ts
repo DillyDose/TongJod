@@ -1,38 +1,8 @@
 import { getSupabase } from './supabase/client'
-import type { Transaction, Category, Budget, Profile } from './types'
+import type { Transaction, Category, Budget } from './types'
 
-export async function getOrCreateProfile(
-  userId: string,
-  email: string,
-  displayName: string,
-): Promise<Profile> {
-  const sb = getSupabase()
-  const { data: existing } = await sb.from('profiles').select('*').eq('id', userId).single()
-  if (existing) return existing as Profile
-
-  const { data, error } = await sb
-    .from('profiles')
-    .insert({ id: userId, email, display_name: displayName })
-    .select()
-    .single()
-  if (error) throw error
-  return data as Profile
-}
-
-export async function seedCategories(userId: string): Promise<void> {
-  const sb = getSupabase()
-  const expenseNames = [
-    'อาหาร', 'เดินทาง', 'ช้อปปิ้ง', 'บิล/ค่าใช้จ่าย',
-    'สุขภาพ', 'บันเทิง', 'กาแฟ', 'อื่นๆ',
-  ]
-  const incomeNames = ['เงินเดือน', 'ฟรีแลนซ์', 'โบนัส', 'อื่นๆ']
-  const rows = [
-    ...expenseNames.map((name) => ({ user_id: userId, name, type: 'expense' as const })),
-    ...incomeNames.map((name)  => ({ user_id: userId, name, type: 'income'  as const })),
-  ]
-  const { error } = await sb.from('categories').insert(rows)
-  if (error) throw error
-}
+// Profile creation + category seeding happen server-side in
+// src/app/auth/callback/route.ts (first-login flow)
 
 export async function fetchTransactions(
   userId: string,

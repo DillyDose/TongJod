@@ -248,6 +248,8 @@ export default function BudgetPage() {
 
       {deletedCat && (
         <Snackbar
+          // key restarts the 5s auto-close timer when a different category is deleted
+          key={deletedCat.id}
           message={`${t('categoryDeleted', lang)} · ${deletedCat.name}`}
           actionLabel={t('undo', lang)}
           onAction={() => restoreCategory(deletedCat)}

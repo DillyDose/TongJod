@@ -16,6 +16,11 @@ export function yesterdayISO(): string {
   return toLocalISO(d)
 }
 
+/** True when a YYYY-MM-DD string falls inside the given year/month (1-based). */
+export function isoInMonth(iso: string, year: number, month: number): boolean {
+  return iso.startsWith(`${year}-${String(month).padStart(2, '0')}-`)
+}
+
 /** Display a YYYY-MM-DD string as a readable date, e.g. "11 มิ.ย. 2569" / "11 Jun 2026". */
 export function fmtDate(iso: string, lang: Lang): string {
   const [y, m, d] = iso.split('-').map(Number)

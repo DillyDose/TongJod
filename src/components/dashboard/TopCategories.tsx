@@ -104,7 +104,7 @@ export function TopCategories({ transactions, categories, lang }: Props) {
               fontFamily: 'var(--font-thai)',
             }}
           >
-            ยังไม่มีรายจ่ายเดือนนี้
+            {t('noExpenseMonth', lang)}
           </p>
         )}
       </div>

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   fetchTransactions,
   insertTransaction,
@@ -11,15 +11,19 @@ import type { Transaction } from '@/lib/types'
 export function useTransactions(userId: string | null, year: number, month: number) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  // Fast month switching can make an older fetch resolve after a newer one —
+  // only the most recent request may write state
+  const requestSeq = useRef(0)
 
   const load = useCallback(async () => {
     if (!userId) return
+    const seq = ++requestSeq.current
     setLoading(true)
     try {
       const data = await fetchTransactions(userId, year, month)
-      setTransactions(data)
+      if (seq === requestSeq.current) setTransactions(data)
     } finally {
-      setLoading(false)
+      if (seq === requestSeq.current) setLoading(false)
     }
   }, [userId, year, month])
 

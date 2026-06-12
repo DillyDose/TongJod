@@ -13,6 +13,7 @@ const STR: Record<string, Entry> = {
   actual:          { th: 'จริง {n}%',                          en: 'Actual {n}%' },
   dailyExpense:    { th: 'รายจ่ายรายวัน',                      en: 'Daily spending' },
   topCategories:   { th: 'หมวดหมู่ที่ใช้มากสุด',               en: 'Top categories' },
+  noExpenseMonth:  { th: 'ยังไม่มีรายจ่ายเดือนนี้',             en: 'No expenses this month' },
   navHome:         { th: 'หน้าหลัก',                           en: 'Home' },
   navAdd:          { th: 'เพิ่ม',                              en: 'Add' },
   navBudget:       { th: 'งบประมาณ',                           en: 'Budget' },

@@ -31,7 +31,7 @@ export function SummaryCards({ transactions, daysElapsed, lang }: Props) {
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--text-primary)' }}>
           {fmt(totalIncome)}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>บาท</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{t('baht', lang)}</div>
         <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, fontFamily: 'var(--font-thai)' }}>
           {t('avgPerDay', lang, { n: fmt(avgIncome) })}
         </div>
@@ -51,7 +51,7 @@ export function SummaryCards({ transactions, daysElapsed, lang }: Props) {
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--text-primary)' }}>
           {fmt(totalExpense)}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>บาท</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{t('baht', lang)}</div>
         <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, fontFamily: 'var(--font-thai)' }}>
           {t('avgPerDay', lang, { n: fmt(avgExpense) })}
         </div>

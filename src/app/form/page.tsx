@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase/client'
 import { AppShell } from '@/components/AppShell'
 import { BottomNav } from '@/components/BottomNav'
@@ -34,8 +34,11 @@ interface Draft {
 
 const TOTAL_STEPS = 6
 
-export default function FormPage() {
+function FormPageContent() {
   const router = useRouter()
+  // The edit state must follow the URL: tapping the "+" tab while editing
+  // navigates to /form without ?edit, which has to become a fresh entry
+  const editParam = useSearchParams().get('edit')
   const [userId, setUserId] = useState<string | null>(null)
   const [lang] = useLang()
   // Expense is by far the most common entry, so the form starts on the
@@ -67,20 +70,29 @@ export default function FormPage() {
   // Opened from the dashboard history list: /form?edit=<id>
   useEffect(() => {
     if (!userId) return
-    const editParam = new URLSearchParams(window.location.search).get('edit')
-    if (!editParam) return
-    fetchTransactionById(editParam)
-      .then((tx) => {
-        if (!tx || tx.user_id !== userId) return
-        prefillFrom(tx)
-      })
-      .catch(() => {})
-  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (editParam) {
+      if (editParam === editId) return // already prefilled
+      let stale = false
+      fetchTransactionById(editParam)
+        .then((tx) => {
+          if (stale || !tx || tx.user_id !== userId) return
+          prefillFrom(tx)
+        })
+        .catch(() => {})
+      return () => { stale = true }
+    }
+    // No ?edit in the URL: if we were editing, the user navigated to a
+    // fresh form (e.g. the "+" tab) — drop the edit state or the next save
+    // would overwrite the old transaction
+    if (editId) resetToNewEntry()
+  }, [userId, editParam, editId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function advance() { setAnimDir('forward'); setStep((s) => s + 1) }
   function goBack()  { setAnimDir('back');    setStep((s) => s - 1) }
 
   function prefillFrom(tx: Transaction) {
+    // Keep the URL in sync so navigation can tell edit mode from new-entry
+    window.history.replaceState(null, '', `/form?edit=${tx.id}`)
     setEditId(tx.id)
     setDraft({
       type: tx.type,
@@ -90,15 +102,23 @@ export default function FormPage() {
       date: tx.date,
     })
     setAnimDir('forward')
-    setStep(6) // jump straight to confirm; "แก้ไข" walks the steps
+    setStep(6) // jump straight to confirm; the back arrow walks the steps
+  }
+
+  function resetToNewEntry() {
+    setDraft({ type: 'expense' })
+    setEditId(null)
+    setSaved(false)
+    setSaveError(false)
+    setAnimDir('forward')
+    setStep(2)
   }
 
   async function handleSave() {
     if (saving) return
     if (!draft.type || !draft.amount || !draft.categoryId || !draft.date || !userId) return
     const note = draft.note?.trim()
-    const tx = {
-      user_id: userId,
+    const payload = {
       type: draft.type,
       amount: Number(draft.amount),
       category_id: draft.categoryId,
@@ -109,9 +129,11 @@ export default function FormPage() {
     setSaveError(false)
     try {
       if (editId) {
-        await updateTransaction(editId, tx)
+        await updateTransaction(editId, payload)
+        // keep the "edit last entry" shortcut in sync with what was just saved
+        setLatestTx((prev) => (prev && prev.id === editId ? { ...prev, ...payload } : prev))
       } else {
-        const created = await insertTransaction(tx)
+        const created = await insertTransaction({ user_id: userId, ...payload })
         setLatestTx(created)
       }
       setSaved(true)
@@ -124,12 +146,7 @@ export default function FormPage() {
 
   function handleAddAnother() {
     window.history.replaceState(null, '', '/form')
-    setDraft({ type: 'expense' })
-    setEditId(null)
-    setSaved(false)
-    setSaveError(false)
-    setAnimDir('forward')
-    setStep(2)
+    resetToNewEntry()
   }
 
   const isDraftComplete =
@@ -269,5 +286,14 @@ export default function FormPage() {
         />
       )}
     </AppShell>
+  )
+}
+
+// useSearchParams() requires a Suspense boundary for prerendering
+export default function FormPage() {
+  return (
+    <Suspense fallback={null}>
+      <FormPageContent />
+    </Suspense>
   )
 }

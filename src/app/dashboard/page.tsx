@@ -18,6 +18,8 @@ import { useCategories } from '@/hooks/useCategories'
 import { useLang } from '@/hooks/useLang'
 import { t } from '@/lib/i18n'
 import { fmt } from '@/lib/theme'
+import { isoInMonth } from '@/lib/dates'
+import { insertTransaction } from '@/lib/db'
 import type { Transaction } from '@/lib/types'
 
 const MONTH_TH = [
@@ -98,7 +100,13 @@ export default function DashboardPage() {
   async function undoDeleteTx() {
     if (!deletedTx) return
     const { id: _id, created_at: _ca, ...data } = deletedTx
-    await addTransaction(data, { bumpUsage: false })
+    // The user may have switched months while the snackbar was up — only
+    // show the restored entry in the list if it belongs to the viewed month
+    if (isoInMonth(data.date, year, month)) {
+      await addTransaction(data, { bumpUsage: false })
+    } else {
+      await insertTransaction(data, { bumpUsage: false })
+    }
   }
 
   async function handleLogout() {
@@ -280,6 +288,8 @@ export default function DashboardPage() {
 
       {deletedTx && (
         <Snackbar
+          // key restarts the 5s auto-close timer when a different entry is deleted
+          key={deletedTx.id}
           message={t('entryDeleted', lang)}
           actionLabel={t('undo', lang)}
           onAction={undoDeleteTx}

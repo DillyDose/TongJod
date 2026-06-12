@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { toLocalISO, todayISO, yesterdayISO, fmtDate } from '@/lib/dates'
+import { toLocalISO, todayISO, yesterdayISO, fmtDate, isoInMonth } from '@/lib/dates'
 
 describe('toLocalISO', () => {
   it('formats using local calendar fields, not UTC', () => {
@@ -18,6 +18,21 @@ describe('todayISO / yesterdayISO', () => {
     const today = new Date(todayISO())
     const yesterday = new Date(yesterdayISO())
     expect(today.getTime() - yesterday.getTime()).toBe(24 * 60 * 60 * 1000)
+  })
+})
+
+describe('isoInMonth', () => {
+  it('matches a date inside the given month', () => {
+    expect(isoInMonth('2026-06-12', 2026, 6)).toBe(true)
+  })
+  it('rejects a date in a different month', () => {
+    expect(isoInMonth('2026-05-31', 2026, 6)).toBe(false)
+  })
+  it('rejects the same month in a different year', () => {
+    expect(isoInMonth('2025-06-12', 2026, 6)).toBe(false)
+  })
+  it('pads single-digit months when comparing', () => {
+    expect(isoInMonth('2026-01-05', 2026, 1)).toBe(true)
   })
 })
 

@@ -26,7 +26,6 @@ The whole color theme shifts green / orange / red based on how spending compares
 | `src/lib/i18n.ts` | All UI strings — always use `t(key, lang, vars)`, never hardcode |
 | `src/lib/icons.ts` | Category icon map — always use `categoryIcon(name)` |
 | `src/lib/dates.ts` | Local-timezone date helpers — use `todayISO()` / `yesterdayISO()`, **never** `toISOString()` (causes UTC day-shift bug for UTC+7) |
-| `src/lib/gestures.ts` | Swipe detection — `detectSwipe(dx, dy, elapsedMs)` |
 
 ## Workflow
 
@@ -40,7 +39,7 @@ The whole color theme shifts green / orange / red based on how spending compares
 - Tests live in `tests/` (vitest); pure logic files get unit tests
 - Input `font-size` must be ≥ 16px — prevents iOS Safari auto-zoom on focus
 - Animations always play — `prefers-reduced-motion` block was intentionally removed (owner's Windows reports reduced motion but wants animations; revert is 6 lines in globals.css)
-- Soft-delete categories (`deleted_at`); budgets of deleted categories are excluded from totals
+- Soft-delete categories (`is_deleted` boolean); budgets of deleted categories are excluded from totals
 
 ## After completing work (REQUIRED)
 

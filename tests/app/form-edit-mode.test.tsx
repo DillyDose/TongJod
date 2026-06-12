@@ -105,10 +105,8 @@ describe('form edit mode', () => {
     expect(amountTexts('฿100').length).toBeGreaterThan(0)
 
     // Walk back to the amount step and change 100 → 250
-    clickBackArrow() // 6 → 5 date
-    await screen.findByText('Choose a date')
-    clickBackArrow() // 5 → 4 note
-    await screen.findByText('Add a note')
+    clickBackArrow() // 5 → 4 details (note + date)
+    await screen.findByText('Extra details')
     clickBackArrow() // 4 → 3 category
     await screen.findByText('Choose a category')
     clickBackArrow() // 3 → 2 amount
@@ -117,10 +115,10 @@ describe('form edit mode', () => {
     fireEvent.change(input, { target: { value: '250' } })
     fireEvent.click(screen.getByText(/Continue/))
 
-    // Forward through category / note / date back to confirm
+    // Forward through category / details back to confirm
     fireEvent.click(await screen.findByText(/อาหาร/))
-    fireEvent.click(await screen.findByText('Skip'))
-    fireEvent.click(await screen.findByText(/Continue/))
+    await screen.findByText('Extra details')
+    fireEvent.click(screen.getByText(/Continue/))
     await screen.findByText('Confirm entry')
     expect(amountTexts('฿250').length).toBeGreaterThan(0)
 

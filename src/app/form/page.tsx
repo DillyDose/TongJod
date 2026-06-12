@@ -8,8 +8,7 @@ import { FormShell } from '@/components/form/FormShell'
 import { StepType } from '@/components/form/StepType'
 import { StepAmount } from '@/components/form/StepAmount'
 import { StepCategory } from '@/components/form/StepCategory'
-import { StepNote } from '@/components/form/StepNote'
-import { StepDate } from '@/components/form/StepDate'
+import { StepDetails } from '@/components/form/StepDetails'
 import { StepConfirm } from '@/components/form/StepConfirm'
 import { StepSuccess } from '@/components/form/StepSuccess'
 import { useCategories } from '@/hooks/useCategories'
@@ -32,7 +31,7 @@ interface Draft {
   date?: string
 }
 
-const TOTAL_STEPS = 6
+const TOTAL_STEPS = 5
 
 function FormPageContent() {
   const router = useRouter()
@@ -102,7 +101,7 @@ function FormPageContent() {
       date: tx.date,
     })
     setAnimDir('forward')
-    setStep(6) // jump straight to confirm; the back arrow walks the steps
+    setStep(5) // jump straight to confirm; the back arrow walks the steps
   }
 
   function resetToNewEntry() {
@@ -242,25 +241,16 @@ function FormPageContent() {
         )}
 
         {step === 4 && (
-          <StepNote
+          <StepDetails
             lang={lang}
-            initial={draft.note}
-            onChange={(note) => setDraft((d) => ({ ...d, note }))}
-            onNext={(note) => { setDraft((d) => ({ ...d, note })); advance() }}
-            onSkip={() => { setDraft((d) => ({ ...d, note: '' })); advance() }}
+            initialNote={draft.note}
+            initialDate={draft.date}
+            onChange={(note, date) => setDraft((d) => ({ ...d, note, date }))}
+            onNext={(note, date) => { setDraft((d) => ({ ...d, note, date })); advance() }}
           />
         )}
 
-        {step === 5 && (
-          <StepDate
-            lang={lang}
-            initial={draft.date}
-            onChange={(date) => setDraft((d) => ({ ...d, date }))}
-            onNext={(date) => { setDraft((d) => ({ ...d, date })); advance() }}
-          />
-        )}
-
-        {step === 6 && isDraftComplete && (
+        {step === 5 && isDraftComplete && (
           <StepConfirm
             lang={lang}
             draft={draft as Required<Draft>}

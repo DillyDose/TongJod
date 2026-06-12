@@ -5,12 +5,15 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 export const metadata: Metadata = {
   title: 'TongJod — ต้องจด',
   description: 'จดทุกบาท ใช้ชีวิตสบายใจ',
+  appleWebApp: { capable: true, title: 'TongJod', statusBarStyle: 'default' },
+  icons: { apple: '/icons/icon-192.png' },
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  themeColor: '#58CC02', // themeColor lives in viewport in Next 15, not metadata
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

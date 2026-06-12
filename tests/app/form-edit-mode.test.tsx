@@ -92,7 +92,7 @@ describe('form edit mode', () => {
 
     // Must be back on a blank amount step, not the stale confirm screen
     await screen.findByText('Enter the amount')
-    expect(screen.getByRole('spinbutton')).toHaveValue(null)
+    expect(screen.getByPlaceholderText('0')).toHaveValue('')
     expect(screen.queryByText('Confirm entry')).toBeNull()
   })
 
@@ -110,8 +110,8 @@ describe('form edit mode', () => {
     clickBackArrow() // 4 → 3 category
     await screen.findByText('Choose a category')
     clickBackArrow() // 3 → 2 amount
-    const input = await screen.findByRole('spinbutton')
-    expect(input).toHaveValue(100)
+    const input = await screen.findByPlaceholderText('0')
+    expect(input).toHaveValue('100')
     fireEvent.change(input, { target: { value: '250' } })
     fireEvent.click(screen.getByText(/Continue/))
 

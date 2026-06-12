@@ -47,6 +47,7 @@ const STR: Record<string, Entry> = {
   chooseType:      { th: 'เลือกประเภท',                        en: 'Choose a type' },
   typeSubtitle:    { th: 'รายรับหรือรายจ่าย?',                 en: 'Income or expense?' },
   enterAmount:     { th: 'ใส่จำนวนเงิน',                       en: 'Enter the amount' },
+  quickAdd:        { th: 'รายการด่วน',                         en: 'Quick add' },
   clear:           { th: 'ล้างค่า',                            en: 'Clear' },
   chooseCategory:  { th: 'เลือกหมวดหมู่',                      en: 'Choose a category' },
   expenseQ:        { th: 'รายจ่ายวันนี้เป็นอะไร?',             en: 'What did you spend on?' },

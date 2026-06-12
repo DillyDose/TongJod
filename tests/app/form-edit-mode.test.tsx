@@ -25,6 +25,7 @@ vi.mock('@/lib/db', () => ({
   updateTransaction: vi.fn(),
   fetchLatestTransaction: vi.fn(),
   fetchTransactionById: vi.fn(),
+  fetchRecentTransactions: vi.fn(),
   fetchCategories: vi.fn(),
   insertCategory: vi.fn(),
   softDeleteCategory: vi.fn(),
@@ -73,6 +74,7 @@ beforeEach(() => {
   window.history.replaceState(null, '', '/form')
   vi.mocked(db.fetchCategories).mockResolvedValue([foodCat])
   vi.mocked(db.fetchLatestTransaction).mockResolvedValue(tx('tx1', 100))
+  vi.mocked(db.fetchRecentTransactions).mockResolvedValue([])
   vi.mocked(db.fetchTransactionById).mockResolvedValue(tx('tx9', 777))
   vi.mocked(db.updateTransaction).mockResolvedValue(undefined)
 })

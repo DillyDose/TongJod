@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase/client'
 import { AppShell } from '@/components/AppShell'
@@ -19,8 +19,12 @@ import {
   updateTransaction,
   fetchLatestTransaction,
   fetchTransactionById,
+  fetchRecentTransactions,
 } from '@/lib/db'
 import { todayISO } from '@/lib/dates'
+import { frequentTemplates, type Template } from '@/lib/suggest'
+import { categoryIcon } from '@/lib/icons'
+import { fmt } from '@/lib/theme'
 import type { Transaction } from '@/lib/types'
 
 interface Draft {
@@ -50,8 +54,14 @@ function FormPageContent() {
   const [saveError, setSaveError] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [latestTx, setLatestTx] = useState<Transaction | null>(null)
+  const [recentTx, setRecentTx] = useState<Transaction[]>([])
 
   const { categories } = useCategories(userId)
+
+  const templates = useMemo(
+    () => frequentTemplates(recentTx, categories),
+    [recentTx, categories],
+  )
 
   useEffect(() => {
     void (async () => {
@@ -64,6 +74,7 @@ function FormPageContent() {
   useEffect(() => {
     if (!userId) return
     fetchLatestTransaction(userId).then(setLatestTx).catch(() => {})
+    fetchRecentTransactions(userId).then(setRecentTx).catch(() => {})
   }, [userId])
 
   // Opened from the dashboard history list: /form?edit=<id>
@@ -143,6 +154,18 @@ function FormPageContent() {
     }
   }
 
+  function applyTemplate(tpl: Template) {
+    setDraft({
+      type: 'expense',
+      amount: String(tpl.amount),
+      categoryId: tpl.categoryId,
+      note: '',
+      date: todayISO(),
+    })
+    setAnimDir('forward')
+    setStep(5) // straight to confirm — the user reviews, then saves
+  }
+
   function handleAddAnother() {
     window.history.replaceState(null, '', '/form')
     resetToNewEntry()
@@ -200,6 +223,58 @@ function FormPageContent() {
             >
               {draft.type === 'income' ? t('income', lang) : t('expense', lang)} ▾
             </button>
+
+            {/* One-tap repeat entries from frequent (category, amount) pairs */}
+            {!editId && draft.type === 'expense' && templates.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-thai)',
+                    marginBottom: 8,
+                  }}
+                >
+                  {t('quickAdd', lang)}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {templates.map((tpl) => {
+                    const cat = categories.find((c) => c.id === tpl.categoryId)
+                    if (!cat) return null
+                    return (
+                      <button
+                        key={`${tpl.categoryId}-${tpl.amount}`}
+                        onClick={() => applyTemplate(tpl)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: 'white',
+                          border: '1.5px solid #E5E5E5',
+                          borderRadius: 9999,
+                          padding: '8px 14px',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 0 0 #E5E5E5',
+                          fontFamily: 'var(--font-thai)',
+                          fontSize: 13,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 18, color: '#555' }}
+                        >
+                          {categoryIcon(cat.name)}
+                        </span>
+                        <span>{cat.name}</span>
+                        <span style={{ fontWeight: 800 }}>฿{fmt(tpl.amount)}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             <StepAmount
               lang={lang}

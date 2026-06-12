@@ -311,6 +311,7 @@ function FormPageContent() {
             categories={categories}
             type={draft.type}
             initial={draft.categoryId}
+            recentTx={recentTx}
             onNext={(categoryId) => { setDraft((d) => ({ ...d, categoryId })); advance() }}
           />
         )}

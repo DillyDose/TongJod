@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { frequentTemplates } from '@/lib/suggest'
+import { frequentTemplates, bucketOfHour, timeAwareCategoryOrder } from '@/lib/suggest'
 import type { Transaction, Category } from '@/lib/types'
 
 function cat(over: Partial<Category> = {}): Category {
@@ -101,5 +101,61 @@ describe('frequentTemplates', () => {
 
   it('returns [] for empty history', () => {
     expect(frequentTemplates([], cats)).toEqual([])
+  })
+})
+
+describe('bucketOfHour', () => {
+  it('maps hours to the four buckets', () => {
+    expect(bucketOfHour(5)).toBe('morning')
+    expect(bucketOfHour(10)).toBe('morning')
+    expect(bucketOfHour(11)).toBe('midday')
+    expect(bucketOfHour(14)).toBe('midday')
+    expect(bucketOfHour(15)).toBe('evening')
+    expect(bucketOfHour(20)).toBe('evening')
+    expect(bucketOfHour(21)).toBe('night')
+    expect(bucketOfHour(4)).toBe('night')
+    expect(bucketOfHour(0)).toBe('night')
+  })
+})
+
+describe('timeAwareCategoryOrder', () => {
+  // NOTE: created_at strings here have NO timezone suffix on purpose —
+  // per ECMA-262 they parse as LOCAL time, so getHours() is deterministic
+  // in any test-runner timezone.
+  const catA = cat({ id: 'a', name: 'A', usage_count: 10 })
+  const catB = cat({ id: 'b', name: 'B', usage_count: 2 })
+  const cats = [catA, catB]
+
+  const morningTx = (categoryId: string) =>
+    tx({ category_id: categoryId, created_at: '2026-06-10T08:30:00' })
+
+  it('falls back to usage_count order when the bucket has too little data', () => {
+    const txs = [morningTx('b'), morningTx('b')] // only 2 < minBucketTx 3
+    expect(timeAwareCategoryOrder(cats, txs, 8).map((c) => c.id)).toEqual(['a', 'b'])
+  })
+
+  it('promotes the category used most in the current time bucket', () => {
+    const txs = [morningTx('b'), morningTx('b'), morningTx('b')]
+    expect(timeAwareCategoryOrder(cats, txs, 8).map((c) => c.id)).toEqual(['b', 'a'])
+  })
+
+  it('falls back at an hour outside the data bucket', () => {
+    const txs = [morningTx('b'), morningTx('b'), morningTx('b')]
+    // 19:00 = evening; no evening tx → usage_count order
+    expect(timeAwareCategoryOrder(cats, txs, 19).map((c) => c.id)).toEqual(['a', 'b'])
+  })
+
+  it('breaks bucket-count ties by usage_count', () => {
+    const txs = [
+      morningTx('a'), morningTx('a'),
+      morningTx('b'), morningTx('b'),
+    ]
+    expect(timeAwareCategoryOrder(cats, txs, 8).map((c) => c.id)).toEqual(['a', 'b'])
+  })
+
+  it('handles empty history and never mutates inputs', () => {
+    const original = [...cats]
+    expect(timeAwareCategoryOrder(cats, [], 8).map((c) => c.id)).toEqual(['a', 'b'])
+    expect(cats).toEqual(original)
   })
 })

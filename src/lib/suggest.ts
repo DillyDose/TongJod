@@ -1,7 +1,7 @@
 import type { Transaction, Category } from './types'
 
-// Suggestion logic for the entry form: quick-add templates derived from
-// the user's recent transaction history.
+// Suggestion logic for the entry form: quick-add templates and
+// time-of-day category ordering, derived from recent transaction history.
 
 export interface Template {
   categoryId: string
@@ -55,4 +55,47 @@ export function frequentTemplates(
     })
     .slice(0, max)
     .map(([, g]) => g)
+}
+
+export type TimeBucket = 'morning' | 'midday' | 'evening' | 'night'
+
+/** morning 05–10 · midday 11–14 · evening 15–20 · night 21–04 */
+export function bucketOfHour(hour: number): TimeBucket {
+  if (hour >= 5 && hour < 11) return 'morning'
+  if (hour >= 11 && hour < 15) return 'midday'
+  if (hour >= 15 && hour < 21) return 'evening'
+  return 'night'
+}
+
+/**
+ * Reorder categories by how often each is used in the current time-of-day
+ * bucket. Falls back to plain usage_count order when the bucket has fewer
+ * than `minBucketTx` matching transactions — not enough signal.
+ */
+export function timeAwareCategoryOrder(
+  categories: Category[],
+  transactions: Transaction[],
+  hour: number,
+  opts: { minBucketTx?: number } = {},
+): Category[] {
+  const { minBucketTx = 3 } = opts
+  const bucket = bucketOfHour(hour)
+  const catIds = new Set(categories.map((c) => c.id))
+
+  const bucketCounts = new Map<string, number>()
+  let bucketTotal = 0
+  for (const tx of transactions) {
+    if (!catIds.has(tx.category_id)) continue
+    // getHours() converts the stored UTC timestamp to the user's local time
+    if (bucketOfHour(new Date(tx.created_at).getHours()) !== bucket) continue
+    bucketCounts.set(tx.category_id, (bucketCounts.get(tx.category_id) ?? 0) + 1)
+    bucketTotal += 1
+  }
+
+  const byUsage = [...categories].sort((a, b) => b.usage_count - a.usage_count)
+  if (bucketTotal < minBucketTx) return byUsage
+
+  return byUsage.sort(
+    (a, b) => (bucketCounts.get(b.id) ?? 0) - (bucketCounts.get(a.id) ?? 0),
+  )
 }

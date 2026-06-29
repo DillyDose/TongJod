@@ -119,22 +119,49 @@ export async function restoreCategory(id: string): Promise<void> {
   if (error) throw error
 }
 
-export async function fetchBudgets(userId: string): Promise<Budget[]> {
+export async function fetchBudgets(userId: string, year: number, month: number): Promise<Budget[]> {
   const sb = getSupabase()
-  const { data, error } = await sb.from('budgets').select('*').eq('user_id', userId)
+  const { data, error } = await sb
+    .from('budgets')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('year', year)
+    .eq('month', month)
   if (error) throw error
   return data as Budget[]
+}
+
+export async function fetchMostRecentBudgets(
+  userId: string,
+  beforeYear: number,
+  beforeMonth: number,
+): Promise<Budget[]> {
+  const sb = getSupabase()
+  const { data, error } = await sb
+    .from('budgets')
+    .select('*')
+    .eq('user_id', userId)
+    .order('year',  { ascending: false })
+    .order('month', { ascending: false })
+  if (error) throw error
+  const all = data as Budget[]
+  const target = beforeYear * 12 + beforeMonth
+  const pivot = all.find((b) => b.year * 12 + b.month < target)
+  if (!pivot) return []
+  return all.filter((b) => b.year === pivot.year && b.month === pivot.month)
 }
 
 export async function upsertBudget(
   userId: string,
   categoryId: string,
+  year: number,
+  month: number,
   amount: number,
 ): Promise<void> {
   const sb = getSupabase()
   const { error } = await sb.from('budgets').upsert(
-    { user_id: userId, category_id: categoryId, amount, updated_at: new Date().toISOString() },
-    { onConflict: 'user_id,category_id' },
+    { user_id: userId, category_id: categoryId, year, month, amount, updated_at: new Date().toISOString() },
+    { onConflict: 'user_id,category_id,year,month' },
   )
   if (error) throw error
 }

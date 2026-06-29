@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Globe } from 'lucide-react'
+import { Plus, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase/client'
 import { AppShell } from '@/components/AppShell'
 import { BottomNav } from '@/components/BottomNav'
@@ -14,6 +14,7 @@ import { useTransactions } from '@/hooks/useTransactions'
 import { useLang } from '@/hooks/useLang'
 import { t } from '@/lib/i18n'
 import { fmt } from '@/lib/theme'
+import { monthLabel } from '@/lib/dates'
 import { categoryIcon } from '@/lib/icons'
 import { useTheme } from '@/components/ThemeProvider'
 import type { Category } from '@/lib/types'
@@ -26,11 +27,13 @@ export default function BudgetPage() {
   const [deletedCat, setDeletedCat] = useState<Category | null>(null)
   const { theme } = useTheme()
 
-  const { categories, addCategory, deleteCategory, restoreCategory } = useCategories(userId)
-  const { budgets, setBudget, totalBudget } = useBudgets(userId, categories)
-
   const now = new Date()
-  const { transactions } = useTransactions(userId, now.getFullYear(), now.getMonth() + 1)
+  const [year,  setYear]  = useState(now.getFullYear())
+  const [month, setMonth] = useState(now.getMonth() + 1)
+
+  const { categories, addCategory, deleteCategory, restoreCategory } = useCategories(userId)
+  const { budgets, setBudget, totalBudget, loading } = useBudgets(userId, year, month, categories)
+  const { transactions } = useTransactions(userId, year, month)
 
   useEffect(() => {
     void (async () => {
@@ -40,10 +43,19 @@ export default function BudgetPage() {
     })()
   }, [router])
 
+  function prevMonth() {
+    if (month === 1) { setMonth(12); setYear((y) => y - 1) }
+    else setMonth((m) => m - 1)
+  }
+  function nextMonth() {
+    if (month === 12) { setMonth(1); setYear((y) => y + 1) }
+    else setMonth((m) => m + 1)
+  }
+
   const expenseCategories = categories.filter((c) => c.type === 'expense')
   const incomeCategories  = categories.filter((c) => c.type === 'income')
 
-  // Spent per category for the current month (for the per-row progress bars)
+  // Spent per category for the selected month
   const spentByCategory = new Map<string, number>()
   for (const tx of transactions) {
     if (tx.type !== 'expense') continue
@@ -55,6 +67,8 @@ export default function BudgetPage() {
     await deleteCategory(id)
     if (cat) setDeletedCat(cat)
   }
+
+  const label = monthLabel(year, month, lang)
 
   return (
     <AppShell nav={<BottomNav lang={lang} />}>
@@ -99,6 +113,52 @@ export default function BudgetPage() {
         </button>
       </div>
 
+      {/* Month selector */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 2,
+          padding: '0 16px 4px',
+        }}
+      >
+        <button
+          onClick={prevMonth}
+          aria-label="previous month"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: 4, display: 'flex', alignItems: 'center',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <span
+          style={{
+            fontFamily: 'var(--font-thai)',
+            fontWeight: 600,
+            fontSize: 15,
+            color: 'var(--text-primary)',
+            minWidth: 140,
+            textAlign: 'center',
+          }}
+        >
+          {label}
+        </span>
+        <button
+          onClick={nextMonth}
+          aria-label="next month"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: 4, display: 'flex', alignItems: 'center',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
       {/* Total budget display */}
       <div style={{ padding: '0 16px 16px', textAlign: 'center' }}>
         <div
@@ -119,7 +179,7 @@ export default function BudgetPage() {
             marginTop: 2,
           }}
         >
-          {t('totalThisMonth', lang)}
+          {t('totalBudgetMonth', lang, { m: label })}
         </div>
       </div>
 
@@ -141,7 +201,7 @@ export default function BudgetPage() {
             {t('expense', lang)}
           </div>
 
-          {expenseCategories.map((cat) => (
+          {!loading && expenseCategories.map((cat) => (
             <BudgetCategoryRow
               key={cat.id}
               category={cat}
@@ -248,7 +308,6 @@ export default function BudgetPage() {
 
       {deletedCat && (
         <Snackbar
-          // key restarts the 5s auto-close timer when a different category is deleted
           key={deletedCat.id}
           message={`${t('categoryDeleted', lang)} · ${deletedCat.name}`}
           actionLabel={t('undo', lang)}

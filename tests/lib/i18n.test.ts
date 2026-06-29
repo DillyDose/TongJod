@@ -15,6 +15,10 @@ describe('t()', () => {
     expect(t('avgPerDay', 'en', { n: 250 })).toBe('Avg 250 THB/day')
     expect(t('expected', 'th', { n: 33 })).toBe('คาดการณ์ 33%')
   })
+  it('substitutes {m} variable in totalBudgetMonth', () => {
+    expect(t('totalBudgetMonth', 'en', { m: 'June 2026' })).toBe('Total budget · June 2026')
+    expect(t('totalBudgetMonth', 'th', { m: 'มิถุนายน 2569' })).toBe('งบทั้งหมดเดือนมิถุนายน 2569')
+  })
   it('returns key for unknown keys', () => {
     expect(t('unknown_key_xyz', 'th')).toBe('unknown_key_xyz')
   })

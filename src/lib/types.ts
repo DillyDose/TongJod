@@ -31,6 +31,8 @@ export interface Budget {
   id: string
   user_id: string
   category_id: string
+  year: number
+  month: number
   amount: number
   updated_at: string
 }

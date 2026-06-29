@@ -1,5 +1,20 @@
 import type { Lang } from './types'
 
+export const MONTH_TH = [
+  'มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+  'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม',
+]
+export const MONTH_EN = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+]
+
+export function monthLabel(year: number, month: number, lang: Lang): string {
+  return lang === 'th'
+    ? `${MONTH_TH[month - 1]} ${year + 543}`
+    : `${MONTH_EN[month - 1]} ${year}`
+}
+
 /** Format a Date as YYYY-MM-DD in the user's local timezone (not UTC). */
 export function toLocalISO(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')

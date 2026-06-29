@@ -25,6 +25,15 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-06-29 — Month-specific budgets (on `dev`, not yet released)**
+- Budget page now has `< June 2026 >` month selector (prev/next arrows, same pattern as dashboard, no future-month restriction)
+- `budgets` table gains `year` and `month` columns; unique constraint changed from `(user_id, category_id)` to `(user_id, category_id, year, month)`; existing rows migrated to 2026/6 via migration file `20260629000001_budgets_monthly.sql`
+- Auto-copy: navigating to a month with no budgets clones from the most recent prior month and saves to DB immediately; full race-condition guard (seq counter) mirrors `useTransactions` pattern
+- Dashboard `useBudgets` call now passes `year`/`month` so budget progress bar reflects the selected month, not always the current month
+- `monthLabel(year, month, lang)` helper extracted to `src/lib/dates.ts`; dashboard removes its inline `MONTH_TH`/`MONTH_EN` arrays
+- New `totalBudgetMonth` i18n key with `{m}` variable for dynamic month subtitle
+- New tests: `tests/hooks/useBudgets.test.ts` (6 cases: happy path, auto-copy, no prior data, race condition, setBudget, totalBudget filter); `monthLabel` cases added to `dates.test.ts`; new i18n key case added to `i18n.test.ts`
+
 **2026-06-12 — Bug sweep #2: edit-mode data-overwrite + stale-data fixes (on `dev`, not yet released)**
 - **Edit mode now follows the URL** (`useSearchParams`): tapping the "+" tab while editing used to keep
   the edit state silently — saving a "new" entry overwrote the old transaction. Now `/form` without
@@ -75,6 +84,7 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### 🔜 Next / Backlog
 
+- [ ] Apply DB migration `20260629000001_budgets_monthly.sql` to the remote Supabase project (run SQL in dashboard or `supabase db push`)
 - [ ] User testing of the navigation features on the `dev` preview → then release to `master`
 - [ ] Separate **dev database** (second Supabase project) so local/preview testing stops touching production data
 - [ ] PWA / installable app (manifest + icons + offline shell) — deferred until "real app" phase
@@ -93,6 +103,8 @@ color theme shifts green/orange/red based on how the user's spending compares to
 | Soft-delete categories; budgets of deleted categories excluded from totals | Preserves history in charts while keeping the math honest |
 | `dev` → preview → `master` workflow | Owner wants to test features before they hit production |
 | Form edit mode is driven by the `?edit=` URL param (single source of truth) | Component state alone couldn't tell "+ tab" apart from edit mode — saving a "new" entry overwrote the edited transaction. Every prefill writes the param; no param = fresh entry |
+| Budgets keyed by `(user_id, category_id, year, month)` — fully independent per month | Users need to track different budget amounts per month; a single global budget per category was too rigid |
+| Auto-copy from most recent prior month on first visit to a new month | Avoids making users re-enter the same amounts every month while still keeping months independent |
 
 ## Conventions
 

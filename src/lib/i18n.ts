@@ -75,7 +75,8 @@ const STR: Record<string, Entry> = {
   viewAll:         { th: 'ดูทั้งหมด',                           en: 'View all' },
   logout:          { th: 'ออกจากระบบ',                         en: 'Log out' },
   // Budget page
-  totalThisMonth:  { th: 'งบทั้งหมดเดือนนี้',                   en: 'Total budget this month' },
+  totalThisMonth:    { th: 'งบทั้งหมดเดือนนี้',                 en: 'Total budget this month' },
+  totalBudgetMonth:  { th: 'งบทั้งหมดเดือน{m}',                 en: 'Total budget · {m}' },
   spent:           { th: 'ใช้ไป',                              en: 'Spent' },
   // Undo snackbar
   undo:            { th: 'เลิกทำ',                              en: 'Undo' },

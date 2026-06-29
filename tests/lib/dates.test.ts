@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { toLocalISO, todayISO, yesterdayISO, fmtDate, isoInMonth } from '@/lib/dates'
+import { toLocalISO, todayISO, yesterdayISO, fmtDate, isoInMonth, monthLabel } from '@/lib/dates'
 
 describe('toLocalISO', () => {
   it('formats using local calendar fields, not UTC', () => {
@@ -33,6 +33,19 @@ describe('isoInMonth', () => {
   })
   it('pads single-digit months when comparing', () => {
     expect(isoInMonth('2026-01-05', 2026, 1)).toBe(true)
+  })
+})
+
+describe('monthLabel', () => {
+  it('returns Thai month name with Buddhist-era year', () => {
+    expect(monthLabel(2026, 6, 'th')).toBe('มิถุนายน 2569')
+  })
+  it('returns English month name with Gregorian year', () => {
+    expect(monthLabel(2026, 6, 'en')).toBe('June 2026')
+  })
+  it('handles year rollover at January', () => {
+    expect(monthLabel(2026, 1, 'en')).toBe('January 2026')
+    expect(monthLabel(2026, 12, 'en')).toBe('December 2026')
   })
 })
 

@@ -1,19 +1,59 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
-import { fetchBudgets, upsertBudget } from '@/lib/db'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { fetchBudgets, fetchMostRecentBudgets, upsertBudget } from '@/lib/db'
 import type { Budget, Category } from '@/lib/types'
 
-export function useBudgets(userId: string | null, categories?: Category[]) {
+export function useBudgets(
+  userId: string | null,
+  year: number,
+  month: number,
+  categories?: Category[],
+) {
   const [budgets, setBudgets] = useState<Budget[]>([])
+  const [loading, setLoading] = useState(true)
+  // Fast month switching can make stale responses arrive after newer ones —
+  // only the most recent request may write state
+  const requestSeq = useRef(0)
 
   useEffect(() => {
     if (!userId) return
-    fetchBudgets(userId).then(setBudgets)
-  }, [userId])
+    const seq = ++requestSeq.current
+    setLoading(true)
+
+    void (async () => {
+      try {
+        const data = await fetchBudgets(userId, year, month)
+        if (seq !== requestSeq.current) return
+
+        if (data.length === 0) {
+          // Auto-copy: no budgets for this month — clone from most recent prior month
+          const prior = await fetchMostRecentBudgets(userId, year, month)
+          if (seq !== requestSeq.current) return
+
+          if (prior.length > 0) {
+            await Promise.all(
+              prior.map((b) => upsertBudget(userId, b.category_id, year, month, b.amount)),
+            )
+            if (seq !== requestSeq.current) return
+            // Re-fetch to get real DB-assigned IDs
+            const copied = await fetchBudgets(userId, year, month)
+            if (seq !== requestSeq.current) return
+            setBudgets(copied)
+          } else {
+            setBudgets([])
+          }
+        } else {
+          setBudgets(data)
+        }
+      } finally {
+        if (seq === requestSeq.current) setLoading(false)
+      }
+    })()
+  }, [userId, year, month])
 
   async function setBudget(categoryId: string, amount: number) {
     if (!userId) return
-    await upsertBudget(userId, categoryId, amount)
+    await upsertBudget(userId, categoryId, year, month, amount)
     setBudgets((prev) => {
       const exists = prev.find((b) => b.category_id === categoryId)
       if (exists) {
@@ -25,6 +65,8 @@ export function useBudgets(userId: string | null, categories?: Category[]) {
           id: crypto.randomUUID(),
           user_id: userId,
           category_id: categoryId,
+          year,
+          month,
           amount,
           updated_at: new Date().toISOString(),
         },
@@ -43,5 +85,5 @@ export function useBudgets(userId: string | null, categories?: Category[]) {
       .reduce((s, b) => s + b.amount, 0)
   }, [budgets, categories])
 
-  return { budgets, setBudget, totalBudget }
+  return { budgets, setBudget, totalBudget, loading }
 }

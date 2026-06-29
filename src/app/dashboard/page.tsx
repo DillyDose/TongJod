@@ -18,18 +18,9 @@ import { useCategories } from '@/hooks/useCategories'
 import { useLang } from '@/hooks/useLang'
 import { t } from '@/lib/i18n'
 import { fmt } from '@/lib/theme'
-import { isoInMonth } from '@/lib/dates'
+import { isoInMonth, monthLabel } from '@/lib/dates'
 import { insertTransaction } from '@/lib/db'
 import type { Transaction } from '@/lib/types'
-
-const MONTH_TH = [
-  'มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
-  'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม',
-]
-const MONTH_EN = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December',
-]
 
 function Skeleton({ height }: { height: number }) {
   return (
@@ -61,8 +52,8 @@ export default function DashboardPage() {
 
   const { transactions, loading, addTransaction, removeTransaction } =
     useTransactions(userId, year, month)
-  const { categories }            = useCategories(userId)
-  const { budgets, totalBudget }  = useBudgets(userId, categories)
+  const { categories }                         = useCategories(userId)
+  const { budgets, totalBudget, loading: budgetLoading } = useBudgets(userId, year, month, categories)
 
   const totalIncome = transactions
     .filter((x) => x.type === 'income')
@@ -114,12 +105,9 @@ export default function DashboardPage() {
     router.replace('/')
   }
 
-  const monthLabel =
-    lang === 'th'
-      ? `${MONTH_TH[month - 1]} ${year + 543}`
-      : `${MONTH_EN[month - 1]} ${year}`
+  const label = monthLabel(year, month, lang)
 
-  const ready = userId && !loading
+  const ready = userId && !loading && !budgetLoading
 
   return (
     <AppShell nav={<BottomNav lang={lang} />}>
@@ -166,7 +154,7 @@ export default function DashboardPage() {
                 textAlign: 'center',
               }}
             >
-              {monthLabel}
+              {label}
             </span>
             <button
               onClick={nextMonth}

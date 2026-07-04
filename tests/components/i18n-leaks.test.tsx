@@ -9,7 +9,7 @@ vi.mock('next/navigation', () => ({
 
 describe('EN mode shows no hardcoded Thai strings', () => {
   it('SummaryCards shows the THB unit label in English', () => {
-    render(<SummaryCards transactions={[]} daysElapsed={10} lang="en" />)
+    render(<SummaryCards transactions={[]} daysInMonth={30} lang="en" />)
     expect(screen.getAllByText('THB').length).toBeGreaterThan(0)
     expect(screen.queryByText('บาท')).toBeNull()
   })

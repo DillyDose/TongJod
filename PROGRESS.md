@@ -25,6 +25,11 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-07-04 — Fix avg/day miscalculation and category-sheet centering bug (on `dev`, not yet released)**
+- `SummaryCards` was dividing income/expense totals by `daysElapsed` (days so far this month) instead of `daysInMonth`, so the avg/day figure kept changing shape as the month progressed. Now divides by total days in the month.
+- `AddCategorySheet`'s bottom sheet centered itself with `left: 50%; transform: translateX(-50%)`, but its `anim-sheet` slide-up animation also drives the `transform` property via CSS keyframes — animations own `transform` outright, so once the animation finished the centering transform was wiped out, leaving the sheet pinned at the viewport's horizontal center point (shifted right by half its own width) instead of actually centered. Fixed by centering via `left: 0; right: 0; margin: 0 auto` instead, which doesn't touch `transform`.
+- Also physically deleted `src/lib/supabase/server.ts` and the Stitch design-reference zip/output files — these were untracked from git in an earlier cleanup pass but never actually removed from disk.
+
 **2026-06-12 — Form UX batch: 5-step form, calculator input, quick templates, time-aware categories, PWA manifest (on `dev`, not yet released)**
 - **Note + date merged into one Details step** (6 → 5 steps): both fields are optional/low-friction,
   so they share a screen — note input, date picker, Today/Yesterday chips, never-disabled Continue

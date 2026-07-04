@@ -261,7 +261,7 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            <SummaryCards transactions={transactions} daysElapsed={daysElapsed} lang={lang} />
+            <SummaryCards transactions={transactions} daysInMonth={daysInMonth} lang={lang} />
             <DailyChart transactions={transactions} daysInMonth={daysInMonth} lang={lang} />
             <TopCategories transactions={transactions} categories={categories} lang={lang} />
             <RecentTransactions

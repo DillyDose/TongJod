@@ -5,22 +5,25 @@ import type { Lang } from '@/lib/types'
 
 interface Props {
   lang: Lang
-  initial?: string
-  onNext: (date: string) => void
-  /** Mirrors the value to the parent as the user picks (for swipe-forward) */
-  onChange?: (date: string) => void
+  initialNote?: string
+  initialDate?: string
+  onNext: (note: string, date: string) => void
+  /** Mirrors the values to the parent as the user types/picks */
+  onChange?: (note: string, date: string) => void
 }
 
-export function StepDate({ lang, initial, onNext, onChange }: Props) {
+export function StepDetails({ lang, initialNote = '', initialDate, onNext, onChange }: Props) {
   // Local-timezone dates — toISOString() is UTC and would shift the date
   // before 7am in Thailand
   const today = todayISO()
   const yesterday = yesterdayISO()
-  const [value, setValue] = useState(initial ?? today)
+  const [note, setNote] = useState(initialNote)
+  const [date, setDate] = useState(initialDate ?? today)
 
-  function update(v: string) {
-    setValue(v)
-    onChange?.(v)
+  function update(nextNote: string, nextDate: string) {
+    setNote(nextNote)
+    setDate(nextDate)
+    onChange?.(nextNote, nextDate)
   }
 
   return (
@@ -34,7 +37,7 @@ export function StepDate({ lang, initial, onNext, onChange }: Props) {
           textAlign: 'center',
         }}
       >
-        {t('chooseDate', lang)}
+        {t('detailsTitle', lang)}
       </h1>
 
       <p
@@ -46,8 +49,25 @@ export function StepDate({ lang, initial, onNext, onChange }: Props) {
           fontFamily: 'var(--font-thai)',
         }}
       >
-        {t('dateHint', lang)}
+        {t('detailsHint', lang)}
       </p>
+
+      <input
+        type="text"
+        autoFocus
+        value={note}
+        onChange={(e) => update(e.target.value, date)}
+        placeholder={t('notePlaceholder', lang)}
+        className="tj-input"
+        style={{
+          marginBottom: 20,
+          fontSize: 16,
+          minHeight: 56,
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onNext(note, date)
+        }}
+      />
 
       <div
         style={{
@@ -60,9 +80,9 @@ export function StepDate({ lang, initial, onNext, onChange }: Props) {
       >
         <input
           type="date"
-          value={value}
+          value={date}
           max={today}
-          onChange={(e) => update(e.target.value)}
+          onChange={(e) => update(note, e.target.value)}
           style={{
             width: '100%',
             background: 'transparent',
@@ -79,14 +99,14 @@ export function StepDate({ lang, initial, onNext, onChange }: Props) {
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
         <button
-          onClick={() => update(today)}
+          onClick={() => update(note, today)}
           style={{
             flex: 1,
             height: 44,
             borderRadius: 12,
-            background: value === today ? 'var(--accent)' : '#F7F7F7',
-            color: value === today ? 'white' : 'var(--text-primary)',
-            border: value === today ? 'none' : '1.5px solid var(--border)',
+            background: date === today ? 'var(--accent)' : '#F7F7F7',
+            color: date === today ? 'white' : 'var(--text-primary)',
+            border: date === today ? 'none' : '1.5px solid var(--border)',
             fontSize: 14,
             fontWeight: 600,
             fontFamily: 'var(--font-thai)',
@@ -96,14 +116,14 @@ export function StepDate({ lang, initial, onNext, onChange }: Props) {
           {t('today', lang)}
         </button>
         <button
-          onClick={() => update(yesterday)}
+          onClick={() => update(note, yesterday)}
           style={{
             flex: 1,
             height: 44,
             borderRadius: 12,
-            background: value === yesterday ? 'var(--accent)' : '#F7F7F7',
-            color: value === yesterday ? 'white' : 'var(--text-primary)',
-            border: value === yesterday ? 'none' : '1.5px solid var(--border)',
+            background: date === yesterday ? 'var(--accent)' : '#F7F7F7',
+            color: date === yesterday ? 'white' : 'var(--text-primary)',
+            border: date === yesterday ? 'none' : '1.5px solid var(--border)',
             fontSize: 14,
             fontWeight: 600,
             fontFamily: 'var(--font-thai)',
@@ -114,11 +134,11 @@ export function StepDate({ lang, initial, onNext, onChange }: Props) {
         </button>
       </div>
 
+      {/* Note is optional and date always has a value, so never disabled */}
       <button
         className="tj-btn-primary"
         style={{ width: '100%' }}
-        onClick={() => onNext(value)}
-        disabled={!value}
+        onClick={() => onNext(note, date)}
       >
         {t('continue', lang)} →
       </button>

@@ -25,6 +25,7 @@ vi.mock('@/lib/db', () => ({
   updateTransaction: vi.fn(),
   fetchLatestTransaction: vi.fn(),
   fetchTransactionById: vi.fn(),
+  fetchRecentTransactions: vi.fn(),
   fetchCategories: vi.fn(),
   insertCategory: vi.fn(),
   softDeleteCategory: vi.fn(),
@@ -73,6 +74,7 @@ beforeEach(() => {
   window.history.replaceState(null, '', '/form')
   vi.mocked(db.fetchCategories).mockResolvedValue([foodCat])
   vi.mocked(db.fetchLatestTransaction).mockResolvedValue(tx('tx1', 100))
+  vi.mocked(db.fetchRecentTransactions).mockResolvedValue([])
   vi.mocked(db.fetchTransactionById).mockResolvedValue(tx('tx9', 777))
   vi.mocked(db.updateTransaction).mockResolvedValue(undefined)
 })
@@ -92,7 +94,7 @@ describe('form edit mode', () => {
 
     // Must be back on a blank amount step, not the stale confirm screen
     await screen.findByText('Enter the amount')
-    expect(screen.getByRole('spinbutton')).toHaveValue(null)
+    expect(screen.getByPlaceholderText('0')).toHaveValue('')
     expect(screen.queryByText('Confirm entry')).toBeNull()
   })
 
@@ -105,22 +107,20 @@ describe('form edit mode', () => {
     expect(amountTexts('฿100').length).toBeGreaterThan(0)
 
     // Walk back to the amount step and change 100 → 250
-    clickBackArrow() // 6 → 5 date
-    await screen.findByText('Choose a date')
-    clickBackArrow() // 5 → 4 note
-    await screen.findByText('Add a note')
+    clickBackArrow() // 5 → 4 details (note + date)
+    await screen.findByText('Extra details')
     clickBackArrow() // 4 → 3 category
     await screen.findByText('Choose a category')
     clickBackArrow() // 3 → 2 amount
-    const input = await screen.findByRole('spinbutton')
-    expect(input).toHaveValue(100)
+    const input = await screen.findByPlaceholderText('0')
+    expect(input).toHaveValue('100')
     fireEvent.change(input, { target: { value: '250' } })
     fireEvent.click(screen.getByText(/Continue/))
 
-    // Forward through category / note / date back to confirm
+    // Forward through category / details back to confirm
     fireEvent.click(await screen.findByText(/อาหาร/))
-    fireEvent.click(await screen.findByText('Skip'))
-    fireEvent.click(await screen.findByText(/Continue/))
+    await screen.findByText('Extra details')
+    fireEvent.click(screen.getByText(/Continue/))
     await screen.findByText('Confirm entry')
     expect(amountTexts('฿250').length).toBeGreaterThan(0)
 

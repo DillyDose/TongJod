@@ -1,6 +1,7 @@
 import { t } from '@/lib/i18n'
 import { categoryIcon } from '@/lib/icons'
-import type { Lang, Category } from '@/lib/types'
+import { timeAwareCategoryOrder } from '@/lib/suggest'
+import type { Lang, Category, Transaction } from '@/lib/types'
 
 interface Props {
   lang: Lang
@@ -8,12 +9,16 @@ interface Props {
   type: 'income' | 'expense'
   initial?: string
   onNext: (catId: string) => void
+  /** Recent history for time-of-day ordering; falls back to usage_count without it */
+  recentTx?: Transaction[]
 }
 
-export function StepCategory({ lang, categories, type, initial, onNext }: Props) {
-  const filtered = categories
-    .filter((c) => c.type === type)
-    .sort((a, b) => b.usage_count - a.usage_count)
+export function StepCategory({ lang, categories, type, initial, onNext, recentTx }: Props) {
+  const filtered = timeAwareCategoryOrder(
+    categories.filter((c) => c.type === type),
+    recentTx ?? [],
+    new Date().getHours(),
+  )
 
   return (
     <div>

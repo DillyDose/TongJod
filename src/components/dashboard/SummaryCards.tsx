@@ -5,15 +5,15 @@ import type { Lang, Transaction } from '@/lib/types'
 
 interface Props {
   transactions: Transaction[]
-  daysElapsed: number
+  daysInMonth: number
   lang: Lang
 }
 
-export function SummaryCards({ transactions, daysElapsed, lang }: Props) {
+export function SummaryCards({ transactions, daysInMonth, lang }: Props) {
   const totalIncome  = transactions.filter((x) => x.type === 'income').reduce((s, x) => s + x.amount, 0)
   const totalExpense = transactions.filter((x) => x.type === 'expense').reduce((s, x) => s + x.amount, 0)
-  const avgIncome    = daysElapsed > 0 ? Math.round(totalIncome  / daysElapsed) : 0
-  const avgExpense   = daysElapsed > 0 ? Math.round(totalExpense / daysElapsed) : 0
+  const avgIncome    = daysInMonth > 0 ? Math.round(totalIncome  / daysInMonth) : 0
+  const avgExpense   = daysInMonth > 0 ? Math.round(totalExpense / daysInMonth) : 0
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

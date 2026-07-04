@@ -39,6 +39,23 @@ export async function fetchLatestTransaction(userId: string): Promise<Transactio
   return data as Transaction | null
 }
 
+/** Most recent transactions regardless of month — used for quick-template
+ *  and time-of-day suggestions on the form. */
+export async function fetchRecentTransactions(
+  userId: string,
+  limit = 200,
+): Promise<Transaction[]> {
+  const sb = getSupabase()
+  const { data, error } = await sb
+    .from('transactions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return data as Transaction[]
+}
+
 export async function fetchTransactionById(id: string): Promise<Transaction | null> {
   const sb = getSupabase()
   const { data, error } = await sb

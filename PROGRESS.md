@@ -25,6 +25,11 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-07-04 — Fix avg/day miscalculation and category-sheet centering bug (on `dev`, not yet released)**
+- `SummaryCards` was dividing income/expense totals by `daysElapsed` (days so far this month) instead of `daysInMonth`, so the avg/day figure kept changing shape as the month progressed. Now divides by total days in the month.
+- `AddCategorySheet`'s bottom sheet centered itself with `left: 50%; transform: translateX(-50%)`, but its `anim-sheet` slide-up animation also drives the `transform` property via CSS keyframes — animations own `transform` outright, so once the animation finished the centering transform was wiped out, leaving the sheet pinned at the viewport's horizontal center point (shifted right by half its own width) instead of actually centered. Fixed by centering via `left: 0; right: 0; margin: 0 auto` instead, which doesn't touch `transform`.
+- Also physically deleted `src/lib/supabase/server.ts` and the Stitch design-reference zip/output files — these were untracked from git in an earlier cleanup pass but never actually removed from disk.
+
 **2026-06-29 — Month-specific budgets (on `dev`, not yet released)**
 - Budget page now has `< June 2026 >` month selector (prev/next arrows, same pattern as dashboard, no future-month restriction)
 - `budgets` table gains `year` and `month` columns; unique constraint changed from `(user_id, category_id)` to `(user_id, category_id, year, month)`; existing rows migrated to 2026/6 via migration file `20260629000001_budgets_monthly.sql`
@@ -33,6 +38,25 @@ color theme shifts green/orange/red based on how the user's spending compares to
 - `monthLabel(year, month, lang)` helper extracted to `src/lib/dates.ts`; dashboard removes its inline `MONTH_TH`/`MONTH_EN` arrays
 - New `totalBudgetMonth` i18n key with `{m}` variable for dynamic month subtitle
 - New tests: `tests/hooks/useBudgets.test.ts` (6 cases: happy path, auto-copy, no prior data, race condition, setBudget, totalBudget filter); `monthLabel` cases added to `dates.test.ts`; new i18n key case added to `i18n.test.ts`
+
+**2026-06-12 — Form UX batch: 5-step form, calculator input, quick templates, time-aware categories, PWA manifest (on `dev`, not yet released)**
+- **Note + date merged into one Details step** (6 → 5 steps): both fields are optional/low-friction,
+  so they share a screen — note input, date picker, Today/Yesterday chips, never-disabled Continue
+- **Calculator amount input**: the amount field accepts `120+45+30` with a live `= ฿195` line;
+  `+`/`−` chips under the field because the iOS decimal keypad has no operator keys; quick-amount
+  buttons now build a visible expression instead of silently summing; only the evaluated total
+  ever reaches the draft/DB (new pure `lib/calc.ts`)
+- **Quick-add template chips** on the amount step: top 3 recurring (category, amount) pairs from
+  the last 200 transactions (≥2 occurrences), one tap → prefilled Confirm with today's date —
+  typical repeat entry is now 2 taps; hidden in edit mode and for income (new `lib/suggest.ts` +
+  `fetchRecentTransactions` in `lib/db`)
+- **Time-of-day aware category ordering**: the category grid is reordered by usage in the current
+  time bucket (morning/midday/evening/night), falling back to plain `usage_count` when the bucket
+  has <3 transactions — new users see no change
+- **Installable PWA**: `src/app/manifest.ts` (standalone, opens on `/form`), theme color, placeholder
+  ฿ icons via `scripts/generate-icons.mjs` (replace artwork + re-run anytime). Deliberately NO
+  service worker — installability without cache-invalidation complexity
+- New tests: `lib/calc`, `lib/suggest`, `StepDetails`, `StepAmount`, `form-quick-template` (63 total)
 
 **2026-06-12 — Bug sweep #2: edit-mode data-overwrite + stale-data fixes (on `dev`, not yet released)**
 - **Edit mode now follows the URL** (`useSearchParams`): tapping the "+" tab while editing used to keep
@@ -87,7 +111,8 @@ color theme shifts green/orange/red based on how the user's spending compares to
 - [ ] Apply DB migration `20260629000001_budgets_monthly.sql` to the remote Supabase project (run SQL in dashboard or `supabase db push`)
 - [ ] User testing of the navigation features on the `dev` preview → then release to `master`
 - [ ] Separate **dev database** (second Supabase project) so local/preview testing stops touching production data
-- [ ] PWA / installable app (manifest + icons + offline shell) — deferred until "real app" phase
+- [ ] Service worker / offline shell (installable manifest shipped 2026-06-12; offline is a separate phase)
+- [ ] Real app icon artwork (current ฿ icon is a generated placeholder — see `scripts/generate-icons.mjs`)
 - [ ] Daily logging reminder or streak counter (fits the Duolingo personality)
 - [ ] CSV export of a month
 - [ ] Supabase redirect allow-list for preview URLs (Google login on `*-patsapol-s-projects.vercel.app`)
@@ -105,6 +130,12 @@ color theme shifts green/orange/red based on how the user's spending compares to
 | Form edit mode is driven by the `?edit=` URL param (single source of truth) | Component state alone couldn't tell "+ tab" apart from edit mode — saving a "new" entry overwrote the edited transaction. Every prefill writes the param; no param = fresh entry |
 | Budgets keyed by `(user_id, category_id, year, month)` — fully independent per month | Users need to track different budget amounts per month; a single global budget per category was too rigid |
 | Auto-copy from most recent prior month on first visit to a new month | Avoids making users re-enter the same amounts every month while still keeping months independent |
+| Note + date merged into one Details step (5 steps) | Both optional/low-friction; one screen fewer per entry |
+| Amount input supports `+`/`-` only (no `*` `/`) | Receipt-summing use case; left-to-right eval, no precedence rules; operator chips because the iOS decimal pad has no `+` |
+| Template chips jump to Confirm, never instant-save | A mis-tap must not write to the DB; one extra tap is the safety margin |
+| Template = (category, amount) pair seen ≥2× in last 200 tx, top 3 by count then recency | One bounded `fetchRecentTransactions` query, no month-window stitching |
+| Time buckets 5–10 / 11–14 / 15–20 / 21–4 with `usage_count` fallback under 3 bucket-tx | Avoids garbage ordering on thin data; empty history = unchanged behavior |
+| PWA = manifest + icons only, no service worker | Installability without cache-invalidation complexity; offline shell is a separate later phase |
 
 ## Conventions
 

@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 
 interface Props {
@@ -9,6 +10,27 @@ interface Props {
   animDir: 'forward' | 'back'
 }
 
+/** Height of the on-screen keyboard overlapping the layout viewport.
+ *  iOS overlays the keyboard without shrinking dvh, so the scroll container
+ *  believes everything fits and buttons under the keyboard become
+ *  unreachable — padding the scroller by this inset makes them scrollable. */
+function useKeyboardInset(): number {
+  const [inset, setInset] = useState(0)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () =>
+      setInset(Math.max(0, window.innerHeight - vv.height - vv.offsetTop))
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
+  return inset
+}
+
 export function FormShell({
   step,
   totalSteps,
@@ -16,6 +38,7 @@ export function FormShell({
   children,
   animDir,
 }: Props) {
+  const keyboardInset = useKeyboardInset()
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -68,6 +91,7 @@ export function FormShell({
           display: 'flex',
           flexDirection: 'column',
           padding: '0 16px',
+          paddingBottom: keyboardInset,
         }}
       >
         <div

@@ -25,6 +25,13 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-07-07 — Fix: iOS keyboard covered the form's Continue/Save buttons → "can't save" (on `dev`, pending phone test)**
+- **Symptom:** second user (iPhone Safari) couldn't save any transaction after the 2026-07-07 production merge; owner (iPhone Chrome) could. Zero `POST /transactions` reached Supabase — pure client-side.
+- **Root cause:** the amount step grew ~130px taller in that merge (quick-add template chips + `+`/`−` operator chips). With the input's `autoFocus` opening the iOS keyboard on arrival, the ต่อไป button (y≈584–640 on a 812pt phone) sat fully under the keyboard (top ≈477–522). iOS overlays the keyboard **without shrinking `dvh`**, so the inner scroll container had `overflow: 0` — the button was unreachable and untappable, with no way to scroll to it.
+- **Why only her:** template chips render only when history has a recurring (category, amount) pair ≥2× — she had one (เดินทาง ฿35 ×3), the owner didn't. Her button was pushed ~76px lower than his, below the keyboard line.
+- **Fix:** (1) removed `autoFocus` from StepAmount + StepDetails so the keyboard doesn't open on arrival; (2) `useKeyboardInset()` in FormShell — tracks `window.visualViewport` and pads the scroll container by the keyboard overlap, so content above the keyboard is always scrollable-into-view.
+- **Debugging notes:** confirmed via Supabase API logs (form loads with zero POSTs, repeated visits + logout/relogin = user retrying), DB (no successful saves by anyone after the deploy), and a local prod build walkthrough with a mocked Supabase client + button geometry measurement.
+
 **2026-07-04 — Fix avg/day miscalculation and category-sheet centering bug (on `dev`, not yet released)**
 - `SummaryCards` was dividing income/expense totals by `daysElapsed` (days so far this month) instead of `daysInMonth`, so the avg/day figure kept changing shape as the month progressed. Now divides by total days in the month.
 - `AddCategorySheet`'s bottom sheet centered itself with `left: 50%; transform: translateX(-50%)`, but its `anim-sheet` slide-up animation also drives the `transform` property via CSS keyframes — animations own `transform` outright, so once the animation finished the centering transform was wiped out, leaving the sheet pinned at the viewport's horizontal center point (shifted right by half its own width) instead of actually centered. Fixed by centering via `left: 0; right: 0; margin: 0 auto` instead, which doesn't touch `transform`.

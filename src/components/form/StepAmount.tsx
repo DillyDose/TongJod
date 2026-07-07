@@ -112,7 +112,6 @@ export function StepAmount({ lang, initial = '', onNext, onChange }: Props) {
             type="text"
             inputMode="decimal"
             autoComplete="off"
-            autoFocus
             value={value}
             onChange={(e) => update(e.target.value)}
             placeholder="0"

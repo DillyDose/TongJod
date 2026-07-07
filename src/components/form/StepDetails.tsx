@@ -54,7 +54,6 @@ export function StepDetails({ lang, initialNote = '', initialDate, onNext, onCha
 
       <input
         type="text"
-        autoFocus
         value={note}
         onChange={(e) => update(e.target.value, date)}
         placeholder={t('notePlaceholder', lang)}

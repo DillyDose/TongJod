@@ -44,5 +44,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|auth/callback).*)'],
+  // manifest + icons must stay public — iOS/Android fetch them without auth
+  // cookies when installing the PWA; gating them breaks install
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|auth/callback|manifest\\.webmanifest|icons/).*)',
+  ],
 }

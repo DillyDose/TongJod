@@ -25,7 +25,7 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
-**2026-07-07 — Fix: iOS keyboard covered the form's Continue/Save buttons → "can't save" (on `dev`, pending phone test)**
+**2026-07-07 — Fix: iOS keyboard covered the form's Continue/Save buttons → "can't save" (released — verified on real iPhone)**
 - **Symptom:** second user (iPhone Safari) couldn't save any transaction after the 2026-07-07 production merge; owner (iPhone Chrome) could. Zero `POST /transactions` reached Supabase — pure client-side.
 - **Root cause:** the amount step grew ~130px taller in that merge (quick-add template chips + `+`/`−` operator chips). With the input's `autoFocus` opening the iOS keyboard on arrival, the ต่อไป button (y≈584–640 on a 812pt phone) sat fully under the keyboard (top ≈477–522). iOS overlays the keyboard **without shrinking `dvh`**, so the inner scroll container had `overflow: 0` — the button was unreachable and untappable, with no way to scroll to it.
 - **Why only her:** template chips render only when history has a recurring (category, amount) pair ≥2× — she had one (เดินทาง ฿35 ×3), the owner didn't. Her button was pushed ~76px lower than his, below the keyboard line.

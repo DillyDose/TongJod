@@ -25,6 +25,7 @@ import { todayISO } from '@/lib/dates'
 import { frequentTemplates, type Template } from '@/lib/suggest'
 import { categoryIcon } from '@/lib/icons'
 import { fmt } from '@/lib/theme'
+import { evalAmountExpression } from '@/lib/calc'
 import type { Transaction } from '@/lib/types'
 
 interface Draft {
@@ -99,6 +100,16 @@ function FormPageContent() {
 
   function advance() { setAnimDir('forward'); setStep((s) => s + 1) }
   function goBack()  { setAnimDir('back');    setStep((s) => s - 1) }
+
+  // Mirrors StepAmount's internal commit(): draft.amount holds the raw
+  // typed expression (mirrored live via onChange), so the result can be
+  // re-derived here for the footer's Continue button.
+  function commitAmount() {
+    const result = evalAmountExpression(draft.amount ?? '')
+    if (result == null) return
+    setDraft((d) => ({ ...d, amount: String(result) }))
+    advance()
+  }
 
   function prefillFrom(tx: Transaction) {
     // Keep the URL in sync so navigation can tell edit mode from new-entry
@@ -178,6 +189,59 @@ function FormPageContent() {
     ? { bg: '#DCFCE7', text: '#15803D' }
     : { bg: '#FEE2E2', text: '#DC2626' }
 
+  const amountResult = evalAmountExpression(draft.amount ?? '')
+
+  // Primary action button(s) per step — rendered in FormShell's sticky
+  // footer so they're always visible. Steps 1/3 are tap-to-advance cards
+  // with no persistent button.
+  const footer =
+    step === 2 ? (
+      <button
+        className="tj-btn-primary"
+        style={{ width: '100%' }}
+        disabled={amountResult == null}
+        onClick={commitAmount}
+      >
+        {t('continue', lang)} →
+      </button>
+    ) : step === 4 ? (
+      <button className="tj-btn-primary" style={{ width: '100%' }} onClick={advance}>
+        {t('continue', lang)} →
+      </button>
+    ) : step === 5 && isDraftComplete ? (
+      <>
+        <button
+          className="tj-btn-primary"
+          style={{ width: '100%' }}
+          disabled={saving}
+          onClick={handleSave}
+        >
+          {saving ? t('saving', lang) : t('save', lang)}
+        </button>
+        {/* New entry: แก้ไข walks back through the form steps.
+            Editing existing: ยกเลิกการแก้ไข discards and returns to dashboard. */}
+        {editId ? (
+          <button
+            className="tj-btn-ghost"
+            style={{ width: '100%' }}
+            disabled={saving}
+            onClick={() => router.push('/dashboard')}
+          >
+            {t('cancelEdit', lang)}
+          </button>
+        ) : (
+          <button
+            className="tj-btn-ghost"
+            style={{ width: '100%' }}
+            disabled={saving}
+            onClick={() => { setAnimDir('back'); setStep(1) }}
+          >
+            {t('edit', lang)}
+          </button>
+        )}
+      </>
+    ) : undefined
+
   return (
     <AppShell nav={<BottomNav lang={lang} />}>
       <FormShell
@@ -185,7 +249,7 @@ function FormPageContent() {
         totalSteps={TOTAL_STEPS}
         onBack={goBack}
         animDir={animDir}
-
+        footer={footer}
       >
         {step === 1 && (
           <StepType
@@ -331,11 +395,7 @@ function FormPageContent() {
             lang={lang}
             draft={draft as Required<Draft>}
             categories={categories}
-            saving={saving}
             error={saveError}
-            onSave={handleSave}
-            onEdit={editId ? undefined : () => { setAnimDir('back'); setStep(1) }}
-            onCancel={editId ? () => router.push('/dashboard') : undefined}
           />
         )}
       </FormShell>

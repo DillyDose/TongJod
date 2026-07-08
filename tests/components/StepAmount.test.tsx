@@ -7,25 +7,25 @@ function input() {
 }
 
 describe('StepAmount calculator input', () => {
-  it('shows the live total for an expression and commits the evaluated result', () => {
+  it('shows the live total for an expression and commits the evaluated result on Enter', () => {
     const onNext = vi.fn()
     render(<StepAmount lang="en" onNext={onNext} />)
 
     fireEvent.change(input(), { target: { value: '120+45+30' } })
     expect(screen.getByText('= ฿195')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(input(), { key: 'Enter' })
     expect(onNext).toHaveBeenCalledWith('195')
   })
 
-  it('disables Continue while the expression is incomplete', () => {
+  it('does not commit on Enter while the expression is incomplete', () => {
     const onNext = vi.fn()
     render(<StepAmount lang="en" onNext={onNext} />)
 
     fireEvent.change(input(), { target: { value: '100+' } })
     expect(screen.getByText('= —')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(input(), { key: 'Enter' })
     expect(onNext).not.toHaveBeenCalled()
   })
 
@@ -36,19 +36,8 @@ describe('StepAmount calculator input', () => {
     fireEvent.change(input(), { target: { value: '250' } })
     expect(screen.queryByText(/^=/)).toBeNull()
 
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(input(), { key: 'Enter' })
     expect(onNext).toHaveBeenCalledWith('250')
-  })
-
-  it('quick-amount buttons build a visible expression', () => {
-    render(<StepAmount lang="en" onNext={vi.fn()} />)
-
-    fireEvent.click(screen.getByText('+฿100'))
-    expect(input()).toHaveValue('100')
-
-    fireEvent.click(screen.getByText('+฿500'))
-    expect(input()).toHaveValue('100+500')
-    expect(screen.getByText('= ฿600')).toBeInTheDocument()
   })
 
   it('operator chips append only when valid', () => {

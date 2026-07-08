@@ -3,14 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { StepDetails } from '@/components/form/StepDetails'
 import { todayISO, yesterdayISO } from '@/lib/dates'
 
+function noteInput() {
+  return screen.getByPlaceholderText(/lunch with friends/i)
+}
+
 describe('StepDetails (combined note + date step)', () => {
-  it('defaults the date to today and Continue works with an empty note', () => {
+  it('defaults the date to today and Enter works with an empty note', () => {
     const onNext = vi.fn()
     render(<StepDetails lang="en" onNext={onNext} />)
 
     expect(screen.getByDisplayValue(todayISO())).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(noteInput(), { key: 'Enter' })
     expect(onNext).toHaveBeenCalledWith('', todayISO())
   })
 
@@ -18,10 +22,10 @@ describe('StepDetails (combined note + date step)', () => {
     const onNext = vi.fn()
     render(<StepDetails lang="en" onNext={onNext} />)
 
-    fireEvent.change(screen.getByPlaceholderText(/lunch with friends/i), {
+    fireEvent.change(noteInput(), {
       target: { value: 'lunch with team' },
     })
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(noteInput(), { key: 'Enter' })
     expect(onNext).toHaveBeenCalledWith('lunch with team', todayISO())
   })
 
@@ -30,7 +34,7 @@ describe('StepDetails (combined note + date step)', () => {
     render(<StepDetails lang="en" onNext={onNext} />)
 
     fireEvent.click(screen.getByText('Yesterday'))
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(noteInput(), { key: 'Enter' })
     expect(onNext).toHaveBeenCalledWith('', yesterdayISO())
   })
 
@@ -48,7 +52,7 @@ describe('StepDetails (combined note + date step)', () => {
     expect(screen.getByDisplayValue('taxi')).toBeInTheDocument()
     expect(screen.getByDisplayValue('2026-06-01')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText(/Continue/))
+    fireEvent.keyDown(noteInput(), { key: 'Enter' })
     expect(onNext).toHaveBeenCalledWith('taxi', '2026-06-01')
   })
 

@@ -14,7 +14,6 @@ interface Props {
 
 export function StepAmount({ lang, initial = '', onNext, onChange }: Props) {
   const [value, setValue] = useState(initial)
-  const [activeQuickBtn, setActiveQuickBtn] = useState<number | null>(null)
 
   // The field accepts +/- expressions ("120+45+30"); only the evaluated
   // total ever leaves this component via onNext, so the draft and
@@ -37,38 +36,18 @@ export function StepAmount({ lang, initial = '', onNext, onChange }: Props) {
     onNext(String(result))
   }
 
-  const quickAmounts = [
-    { label: '+฿100', amount: 100 },
-    { label: '+฿500', amount: 500 },
-    { label: '+฿1,000', amount: 1000 },
-    { label: '+฿5,000', amount: 5000 },
-  ]
-
-  const handleQuickAmount = (amount: number, index: number) => {
-    // Build a visible expression instead of silently summing, so the
-    // user sees how the total came together (live "= ฿..." line below)
-    const next =
-      value === '' ? String(amount)
-      : /[+\-]$/.test(value) ? value + String(amount)
-      : `${value}+${amount}`
-    update(next)
-    setActiveQuickBtn(index)
-    setTimeout(() => setActiveQuickBtn(null), 100)
-  }
-
-  const quickBtnStyle = (pressed: boolean): React.CSSProperties => ({
+  const chipStyle: React.CSSProperties = {
     background: 'white',
     border: '1.5px solid #E5E5E5',
     borderRadius: 12,
     padding: '12px 8px',
-    boxShadow: pressed ? '0 1px 0 0 #E5E5E5' : '0 2px 0 0 #E5E5E5',
+    boxShadow: '0 2px 0 0 #E5E5E5',
     fontSize: 15,
     fontWeight: 600,
     fontFamily: 'var(--font-display)',
     cursor: 'pointer',
     transition: 'transform 100ms, box-shadow 100ms',
-    transform: pressed ? 'translateY(1px)' : 'translateY(0)',
-  })
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -157,57 +136,27 @@ export function StepAmount({ lang, initial = '', onNext, onChange }: Props) {
       <div style={{ display: 'flex', gap: 10 }}>
         <button
           aria-label="plus"
-          style={{ ...quickBtnStyle(false), flex: 1, fontSize: 20, fontWeight: 700, padding: '8px' }}
+          style={{ ...chipStyle, flex: 1, fontSize: 20, fontWeight: 700, padding: '8px' }}
           onClick={() => appendOperator('+')}
         >
           +
         </button>
         <button
           aria-label="minus"
-          style={{ ...quickBtnStyle(false), flex: 1, fontSize: 20, fontWeight: 700, padding: '8px' }}
+          style={{ ...chipStyle, flex: 1, fontSize: 20, fontWeight: 700, padding: '8px' }}
           onClick={() => appendOperator('-')}
         >
           −
         </button>
       </div>
 
-      {/* Quick Amount Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 10,
-        }}
+      <button
+        className="tj-btn-ghost"
+        style={{ width: '100%' }}
+        onClick={() => update('')}
       >
-        {quickAmounts.map((btn, index) => (
-          <button
-            key={index}
-            style={quickBtnStyle(activeQuickBtn === index)}
-            onClick={() => handleQuickAmount(btn.amount, index)}
-          >
-            {btn.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <button
-          className="tj-btn-primary"
-          style={{ width: '100%' }}
-          disabled={result == null}
-          onClick={commit}
-        >
-          {t('continue', lang)} →
-        </button>
-        <button
-          className="tj-btn-ghost"
-          style={{ width: '100%' }}
-          onClick={() => update('')}
-        >
-          {t('clear', lang)}
-        </button>
-      </div>
+        {t('clear', lang)}
+      </button>
     </div>
   )
 }

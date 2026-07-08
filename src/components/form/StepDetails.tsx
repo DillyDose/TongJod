@@ -133,14 +133,6 @@ export function StepDetails({ lang, initialNote = '', initialDate, onNext, onCha
         </button>
       </div>
 
-      {/* Note is optional and date always has a value, so never disabled */}
-      <button
-        className="tj-btn-primary"
-        style={{ width: '100%' }}
-        onClick={() => onNext(note, date)}
-      >
-        {t('continue', lang)} →
-      </button>
     </div>
   )
 }

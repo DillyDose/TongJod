@@ -15,13 +15,7 @@ interface Props {
   lang: Lang
   draft: Draft
   categories: Category[]
-  saving: boolean
   error: boolean
-  onSave: () => void
-  /** New-entry mode: walk back through the form steps to change a field. */
-  onEdit?: () => void
-  /** Edit-existing mode: discard changes and return to the dashboard. */
-  onCancel?: () => void
 }
 
 function ConfirmRow({ label, children, borderBottom }: { label: string; children: React.ReactNode; borderBottom?: boolean }) {
@@ -33,7 +27,7 @@ function ConfirmRow({ label, children, borderBottom }: { label: string; children
   )
 }
 
-export function StepConfirm({ lang, draft, categories, saving, error, onSave, onEdit, onCancel }: Props) {
+export function StepConfirm({ lang, draft, categories, error }: Props) {
   const cat = categories.find((c) => c.id === draft.categoryId)
   const typeColor = draft.type === 'income' ? '#22C55E' : '#EF4444'
   const typeLabel = draft.type === 'income' ? t('income', lang) : t('expense', lang)
@@ -97,28 +91,6 @@ export function StepConfirm({ lang, draft, categories, saving, error, onSave, on
         >
           {t('saveFailed', lang)}
         </p>
-      )}
-
-      <button
-        className="tj-btn-primary"
-        style={{ width: '100%', marginBottom: 12 }}
-        disabled={saving}
-        onClick={onSave}
-      >
-        {saving ? t('saving', lang) : t('save', lang)}
-      </button>
-
-      {/* New entry: แก้ไข walks back through the form steps.
-          Editing existing: ยกเลิกการแก้ไข discards and returns to dashboard. */}
-      {onEdit && (
-        <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onEdit} disabled={saving}>
-          {t('edit', lang)}
-        </button>
-      )}
-      {onCancel && (
-        <button className="tj-btn-ghost" style={{ width: '100%' }} onClick={onCancel} disabled={saving}>
-          {t('cancelEdit', lang)}
-        </button>
       )}
     </div>
   )

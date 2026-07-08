@@ -8,6 +8,12 @@ interface Props {
   onBack: () => void
   children: React.ReactNode
   animDir: 'forward' | 'back'
+  /** Primary action button(s) for the current step — rendered in a
+   *  persistent footer below the scroll area, outside the sliding step
+   *  content, so it's always visible: never buried below long content
+   *  or the iOS keyboard. Steps with no persistent action (tap-to-advance
+   *  cards) omit this. */
+  footer?: React.ReactNode
 }
 
 /** Height of the on-screen keyboard overlapping the layout viewport.
@@ -37,10 +43,11 @@ export function FormShell({
   onBack,
   children,
   animDir,
+  footer,
 }: Props) {
   const keyboardInset = useKeyboardInset()
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div
         style={{
@@ -91,7 +98,6 @@ export function FormShell({
           display: 'flex',
           flexDirection: 'column',
           padding: '0 16px',
-          paddingBottom: keyboardInset,
         }}
       >
         <div
@@ -107,6 +113,27 @@ export function FormShell({
           {children}
         </div>
       </div>
+
+      {/* Sticky action footer — stays outside the scroll/slide area so the
+          primary button is always visible, and shifts above the iOS
+          keyboard via keyboardInset (mirrors how BottomNav stays stationary
+          across page transitions). */}
+      {footer && (
+        <div
+          style={{
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+            padding: '12px 16px',
+            paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+            marginBottom: keyboardInset,
+            background: 'var(--bg-base)',
+          }}
+        >
+          {footer}
+        </div>
+      )}
     </div>
   )
 }

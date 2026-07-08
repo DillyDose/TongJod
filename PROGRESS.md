@@ -25,6 +25,16 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### ✅ Done
 
+**2026-07-08 — Remove quick-amount preset buttons + make Continue/Save a persistent sticky footer (on `dev`, not yet released)**
+- **Why:** the 2026-07-07 keyboard-inset patch only made the Continue/Save button *reachable by scrolling* under the iOS keyboard — it didn't fix the root cause. Any future growth of a step's content (or a keyboard on a short device) could re-hide the button again, and it already had, making the quick-add feature "ใช้งานจริงยากมาก" per user report.
+- Removed the 2×2 quick-amount preset grid (+฿100/+฿500/+฿1,000/+฿5,000) from the amount step — kept the `+`/`-` operator chips (still needed since the iOS decimal keypad has no operator keys) and the amount input itself. The separate "บันทึกด่วน" quick-add template feature (recurring category+amount chips, `lib/suggest.ts`) was explicitly **kept**, not touched.
+- `FormShell` gains a `footer?: React.ReactNode` prop: a `flexShrink: 0` block rendered *after* the scrollable step content (sibling, not child) — same architectural pattern `AppShell` already uses to keep `BottomNav` stationary across page transitions. Only steps with a persistent action (Amount, Details, Confirm) pass one; the tap-to-advance steps (Type, Category) don't.
+- `StepAmount`, `StepDetails`, `StepConfirm` no longer render their own Continue/Save/Edit/Cancel buttons — that JSX moved up into `src/app/form/page.tsx`, which builds the right footer content per `step` and passes it to `<FormShell footer={...}>`. `StepConfirm` is now a pure review-card display component (dropped `saving`/`onSave`/`onEdit`/`onCancel` from its props). Enter-key-to-continue still works on the amount and note inputs (unchanged internal `onNext` plumbing); the footer's Continue button independently re-derives the calculator result from `draft.amount` via the already-exported `evalAmountExpression()` since that value is mirrored into the page's `draft` state on every keystroke.
+- `useKeyboardInset()` (tracks how much of the viewport the iOS keyboard covers) now shifts the **footer** up (`marginBottom: keyboardInset`) instead of padding the scroll container — the button that used to need scroll-reveal no longer lives in the scroll area at all.
+- Edit/Cancel buttons in the confirm-step footer are now `disabled={saving}` too (previously only Save was), closing a race where a user could navigate away mid-save.
+- Updated `tests/components/StepAmount.test.tsx` / `StepDetails.test.tsx` to trigger Continue via Enter-key instead of clicking a button that no longer lives inside those components (the button's behavior is now exercised at the `form-edit-mode.test.tsx` integration level, which needed no changes). Deleted the quick-amount-grid test.
+- **Not yet verified on a real device** — this is a mobile-layout-sensitive fix and the Claude Code sandbox has no way to authenticate against Supabase to drive the actual `/form` route in a browser preview. Verified instead via `npm run type-check`, `npx vitest run` (74/74 passing), and `npm run build`, plus a structural trace of the `100dvh` → `AppShell` → `FormShell` flex chain confirming a `flexShrink:0` footer can't be clipped (same mechanism that already keeps `BottomNav` pinned). **Before merging to `master`, test on the `dev` Vercel preview on a real short phone (e.g. iPhone SE) with the keyboard open** — the new sticky footer stacks on top of the existing `BottomNav` tab bar, and that combined footprint hasn't been checked on an actual small screen yet.
+
 **2026-07-07 — Fix: iOS keyboard covered the form's Continue/Save buttons → "can't save" (released — verified on real iPhone)**
 - **Symptom:** second user (iPhone Safari) couldn't save any transaction after the 2026-07-07 production merge; owner (iPhone Chrome) could. Zero `POST /transactions` reached Supabase — pure client-side.
 - **Root cause:** the amount step grew ~130px taller in that merge (quick-add template chips + `+`/`−` operator chips). With the input's `autoFocus` opening the iOS keyboard on arrival, the ต่อไป button (y≈584–640 on a 812pt phone) sat fully under the keyboard (top ≈477–522). iOS overlays the keyboard **without shrinking `dvh`**, so the inner scroll container had `overflow: 0` — the button was unreachable and untappable, with no way to scroll to it.
@@ -115,6 +125,7 @@ color theme shifts green/orange/red based on how the user's spending compares to
 
 ### 🔜 Next / Backlog
 
+- [ ] Verify the new sticky footer + existing `BottomNav` combined footprint on a short real phone (iPhone SE class) with the keyboard open on the amount/details steps — not yet checked on a device (2026-07-08 change)
 - [ ] Apply DB migration `20260629000001_budgets_monthly.sql` to the remote Supabase project (run SQL in dashboard or `supabase db push`)
 - [ ] User testing of the navigation features on the `dev` preview → then release to `master`
 - [ ] Separate **dev database** (second Supabase project) so local/preview testing stops touching production data
@@ -143,6 +154,7 @@ color theme shifts green/orange/red based on how the user's spending compares to
 | Template = (category, amount) pair seen ≥2× in last 200 tx, top 3 by count then recency | One bounded `fetchRecentTransactions` query, no month-window stitching |
 | Time buckets 5–10 / 11–14 / 15–20 / 21–4 with `usage_count` fallback under 3 bucket-tx | Avoids garbage ordering on thin data; empty history = unchanged behavior |
 | PWA = manifest + icons only, no service worker | Installability without cache-invalidation complexity; offline shell is a separate later phase |
+| Form's primary action button lives in a `FormShell`-level sticky footer, not inside each step | Scroll-padding patches (2026-07-07) only made the button *reachable*, not *always visible* — any future growth of step content could re-hide it again. A `flexShrink:0` footer sibling (same pattern as `BottomNav`) can't be clipped by scroll/keyboard by construction |
 
 ## Conventions
 

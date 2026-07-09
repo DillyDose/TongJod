@@ -49,7 +49,11 @@ function FormPageContent() {
   // amount step with type preset — step 1 (type) is reachable via back
   const [step, setStep] = useState(2)
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
-  const [draft, setDraft] = useState<Draft>({ type: 'expense' })
+  // date defaults to today so isDraftComplete is already true by the time the
+  // user reaches step 5 without ever touching the date field — StepDetails
+  // shows "today" as its own default, but only reports it up to this draft
+  // via onChange, which never fires unless the user actually edits the field
+  const [draft, setDraft] = useState<Draft>({ type: 'expense', date: todayISO() })
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
@@ -127,7 +131,7 @@ function FormPageContent() {
   }
 
   function resetToNewEntry() {
-    setDraft({ type: 'expense' })
+    setDraft({ type: 'expense', date: todayISO() })
     setEditId(null)
     setSaved(false)
     setSaveError(false)
